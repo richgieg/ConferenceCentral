@@ -15,6 +15,7 @@ __author__ = 'wesc+api@google.com (Wesley Chun)'
 
 from datetime import datetime
 import json
+import logging
 import os
 import time
 
@@ -32,6 +33,8 @@ from models import ProfileForm
 from models import TeeShirtSize
 
 from settings import WEB_CLIENT_ID
+
+from utils import getUserId
 
 EMAIL_SCOPE = endpoints.EMAIL_SCOPE
 API_EXPLORER_CLIENT_ID = endpoints.API_EXPLORER_CLIENT_ID
@@ -61,30 +64,23 @@ class ConferenceApi(remote.Service):
         pf.check_initialized()
         return pf
 
-
     def _getProfileFromUser(self):
         """Return user Profile from datastore, creating new one if non-existent."""
-        ## TODO 2
-        ## step 1: make sure user is authed
-        ## uncomment the following lines:
-        # user = endpoints.get_current_user()
-        # if not user:
-        #     raise endpoints.UnauthorizedException('Authorization required')
-        profile = None
-        ## step 2: create a new Profile from logged in user data
-        ## you can use user.nickname() to get displayName
-        ## and user.email() to get mainEmail
+        user = endpoints.get_current_user()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
+        user_id = getUserId(user)
+        p_key = ndb.Key(Profile, user_id)
+        profile = p_key.get()
         if not profile:
             profile = Profile(
-                userId = None,
-                key = None,
-                displayName = "Test", 
-                mainEmail= None,
+                key = p_key,
+                displayName = user.nickname(),
+                mainEmail= user.email(),
                 teeShirtSize = str(TeeShirtSize.NOT_SPECIFIED),
             )
-
+            profile.put()
         return profile      # return Profile
-
 
     def _doProfile(self, save_request=None):
         """Get user Profile and return to user, possibly updating it first."""
@@ -98,10 +94,10 @@ class ConferenceApi(remote.Service):
                     val = getattr(save_request, field)
                     if val:
                         setattr(prof, field, str(val))
+            prof.put()
 
         # return ProfileForm
         return self._copyProfileToForm(prof)
-
 
     @endpoints.method(message_types.VoidMessage, ProfileForm,
             path='profile', http_method='GET', name='getProfile')
@@ -109,15 +105,12 @@ class ConferenceApi(remote.Service):
         """Return user profile."""
         return self._doProfile()
 
-    # TODO 1
-    # 1. change request class
-    # 2. pass request to _doProfile function
-    @endpoints.method(message_types.VoidMessage, ProfileForm,
+    @endpoints.method(ProfileMiniForm, ProfileForm,
             path='profile', http_method='POST', name='saveProfile')
     def saveProfile(self, request):
         """Update & return user profile."""
-        return self._doProfile()
+        return self._doProfile(request)
 
 
 # registers API
-api = endpoints.api_server([ConferenceApi]) 
+api = endpoints.api_server([ConferenceApi])
