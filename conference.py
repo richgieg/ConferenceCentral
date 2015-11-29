@@ -213,6 +213,45 @@ class ConferenceApi(remote.Service):
             for conf in conferences]
         )
 
+    @endpoints.method(message_types.VoidMessage, ConferenceForms,
+            path='getConferencesCreated',
+            http_method='POST', name='getConferencesCreated')
+    def getConferencesCreated(self, request):
+        """Return conferences created by user."""
+        # make sure user is authed
+        user = endpoints.get_current_user()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
+        # make profile key
+        p_key = ndb.Key(Profile, getUserId(user))
+        # create ancestor query for this user
+        conferences = Conference.query(ancestor=p_key)
+        # get the user profile and display name
+        prof = p_key.get()
+        displayName = getattr(prof, 'displayName')
+        # return set of ConferenceForm objects per Conference
+        return ConferenceForms(
+            items=[self._copyConferenceToForm(conf, displayName) for conf in conferences]
+        )
+
+    @endpoints.method(message_types.VoidMessage, ConferenceForms,
+            path='filterPlayground', http_method='GET', name='filterPlayground')
+    def filter_playground(self, request):
+        q = Conference.query()
+
+        # 1: city equal to London
+        q = q.filter(Conference.city == 'London')
+
+        # 2: has topic Medical Innovations
+        q = q.filter(Conference.topics == 'Medical Innovations')
+
+        # 3: order by conference name
+        q = q.order(Conference.name)
+
+        return ConferenceForms(
+            items=[self._copyConferenceToForm(conf, "") for conf in q]
+        )
+
 
 # registers API
 api = endpoints.api_server([ConferenceApi])
