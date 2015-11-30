@@ -23,6 +23,7 @@ class Profile(ndb.Model):
     displayName = ndb.StringProperty()
     mainEmail = ndb.StringProperty()
     teeShirtSize = ndb.StringProperty(default='NOT_SPECIFIED')
+    conferenceKeysToAttend = ndb.StringProperty(repeated=True)
 
 
 class ProfileMiniForm(messages.Message):
@@ -85,6 +86,16 @@ class ConferenceForm(messages.Message):
     endDate         = messages.StringField(10)
     websafeKey      = messages.StringField(11)
     organizerDisplayName = messages.StringField(12)
+
+
+class BooleanMessage(messages.Message):
+    """BooleanMessage-- outbound Boolean value message"""
+    data = messages.BooleanField(1)
+
+
+class ConflictException(endpoints.ServiceException):
+    """ConflictException -- exception mapped to HTTP 409 response"""
+    http_status = httplib.CONFLICT
 
 
 class ConferenceForms(messages.Message):
