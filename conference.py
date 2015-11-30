@@ -248,6 +248,9 @@ class ConferenceApi(remote.Service):
         # 3: order by conference name
         q = q.order(Conference.name)
 
+        # 4: filter for June
+        q = q.filter(Conference.month == 6)
+
         return ConferenceForms(
             items=[self._copyConferenceToForm(conf, "") for conf in q]
         )
