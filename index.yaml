@@ -13,6 +13,11 @@ indexes:
 - kind: Conference
   properties:
   - name: city
+  - name: name
+
+- kind: Conference
+  properties:
+  - name: city
   - name: month
   - name: topics
   - name: name
