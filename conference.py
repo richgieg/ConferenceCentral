@@ -34,6 +34,7 @@ from models import ConferenceForm
 from models import ConferenceForms
 from models import ConferenceQueryForm
 from models import ConferenceQueryForms
+from models import StringMessage
 from models import TeeShirtSize
 
 from utils import getUserId
@@ -82,7 +83,7 @@ CONF_POST_REQUEST = endpoints.ResourceContainer(
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
-@endpoints.api(name='conference', version='v1', 
+@endpoints.api(name='conference', version='v1',
     allowed_client_ids=[WEB_CLIENT_ID, API_EXPLORER_CLIENT_ID],
     scopes=[EMAIL_SCOPE])
 class ConferenceApi(remote.Service):
@@ -489,6 +490,44 @@ class ConferenceApi(remote.Service):
 
 
 # - - - Announcements - - - - - - - - - - - - - - - - - - - -
+
+    @staticmethod
+    def _cacheAnnouncement():
+        """Create Announcement & assign to memcache; used by
+        memcache cron job & putAnnouncement().
+        """
+        confs = Conference.query(ndb.AND(
+            Conference.seatsAvailable <= 5,
+            Conference.seatsAvailable > 0)
+        ).fetch(projection=[Conference.name])
+
+        if confs:
+            # If there are almost sold out conferences,
+            # format announcement and set it in memcache
+            announcement = '%s %s' % (
+                'Last chance to attend! The following conferences '
+                'are nearly sold out:',
+                ', '.join(conf.name for conf in confs))
+            memcache.set(MEMCACHE_ANNOUNCEMENTS_KEY, announcement)
+        else:
+            # If there are no sold out conferences,
+            # delete the memcache announcements entry
+            announcement = ""
+            memcache.delete(MEMCACHE_ANNOUNCEMENTS_KEY)
+
+        return announcement
+
+
+    @endpoints.method(message_types.VoidMessage, StringMessage,
+            path='conference/announcement/get',
+            http_method='GET', name='getAnnouncement')
+    def getAnnouncement(self, request):
+        """Return Announcement from memcache."""
+        # TODO 1
+        # return an existing announcement from Memcache or an empty string.
+        announcement = memcache.get(MEMCACHE_ANNOUNCEMENTS_KEY) or ""
+        return StringMessage(data=announcement)
+
 
 # TODO 1
 
