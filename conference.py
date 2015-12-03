@@ -6,8 +6,9 @@ conference.py -- Udacity conference server-side Python App Engine API;
 
 $Id: conference.py,v 1.25 2014/05/24 23:42:19 wesc Exp wesc $
 
-created by wesc on 2014 apr 21
+Created by wesc on 2014 apr 21
 
+Modified by Richard Gieg on 12/2/2015 for Udacity Full Stack Project #4
 """
 
 __author__ = 'wesc+api@google.com (Wesley Chun)'
@@ -16,13 +17,12 @@ __author__ = 'wesc+api@google.com (Wesley Chun)'
 from datetime import datetime
 
 import endpoints
-from protorpc import messages
-from protorpc import message_types
-from protorpc import remote
-
 from google.appengine.api import memcache
 from google.appengine.api import taskqueue
 from google.appengine.ext import ndb
+from protorpc import messages
+from protorpc import message_types
+from protorpc import remote
 
 from models import ConflictException
 from models import Profile
@@ -36,9 +36,7 @@ from models import ConferenceQueryForm
 from models import ConferenceQueryForms
 from models import StringMessage
 from models import TeeShirtSize
-
 from utils import getUserId
-
 from settings import WEB_CLIENT_ID
 
 EMAIL_SCOPE = endpoints.EMAIL_SCOPE
