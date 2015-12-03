@@ -1,14 +1,17 @@
 #!/usr/bin/env python
+
+"""
+main.py -- Udacity conference server-side Python App Engine
+    tasks and cron job URL handlers
+
+Created by Richard Gieg on 12/2/2015 for Udacity Full Stack Project #4
+"""
+
 import webapp2
 from google.appengine.api import app_identity
 from google.appengine.api import mail
+
 from conference import ConferenceApi
-
-
-class SetAnnouncementHandler(webapp2.RequestHandler):
-    def get(self):
-        """Set Announcement in Memcache."""
-        ConferenceApi._cacheAnnouncement()
 
 
 class SendConfirmationEmailHandler(webapp2.RequestHandler):
@@ -23,6 +26,12 @@ class SendConfirmationEmailHandler(webapp2.RequestHandler):
             'conference:\r\n\r\n%s' % self.request.get(
                 'conferenceInfo')
         )
+
+
+class SetAnnouncementHandler(webapp2.RequestHandler):
+    def get(self):
+        """Set Announcement in Memcache."""
+        ConferenceApi._cacheAnnouncement()
 
 
 app = webapp2.WSGIApplication([
