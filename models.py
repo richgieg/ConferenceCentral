@@ -9,6 +9,7 @@ $Id: models.py,v 1.1 2014/05/24 22:01:10 wesc Exp $
 created/forked from conferences.py by wesc on 2014 may 24
 
 Modified by Richard Gieg on 12/2/2015 for Udacity Full Stack Project #4
+
 """
 
 __author__ = 'wesc+api@google.com (Wesley Chun)'

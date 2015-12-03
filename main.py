@@ -2,10 +2,17 @@
 
 """
 main.py -- Udacity conference server-side Python App Engine
-    tasks and cron job URL handlers
+    HTTP controller handlers for memcache & task queue access
 
-Created by Richard Gieg on 12/2/2015 for Udacity Full Stack Project #4
+$Id$
+
+created by wesc on 2014 may 24
+
+Modified by Richard Gieg on 12/2/2015 for Udacity Full Stack Project #4
+
 """
+
+__author__ = 'wesc+api@google.com (Wesley Chun)'
 
 import webapp2
 from google.appengine.api import app_identity

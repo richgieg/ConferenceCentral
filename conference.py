@@ -6,9 +6,10 @@ conference.py -- Udacity conference server-side Python App Engine API;
 
 $Id: conference.py,v 1.25 2014/05/24 23:42:19 wesc Exp wesc $
 
-Created by wesc on 2014 apr 21
+created by wesc on 2014 apr 21
 
 Modified by Richard Gieg on 12/2/2015 for Udacity Full Stack Project #4
+
 """
 
 __author__ = 'wesc+api@google.com (Wesley Chun)'
