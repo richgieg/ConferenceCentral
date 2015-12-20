@@ -74,7 +74,7 @@ class ConferenceApi(remote.Service):
     """Conference API v0.1"""
 
 ###############################################################################
-###         Private Methods: Conferences
+###         Conferences: Private Methods
 ###############################################################################
 
     @staticmethod
@@ -307,102 +307,7 @@ class ConferenceApi(remote.Service):
         return self._copyConferenceToForm(conf, getattr(prof, 'displayName'))
 
 ###############################################################################
-###         Private Methods: Speakers
-###############################################################################
-
-    def _copySpeakerToForm(self, speaker):
-        """Copy relevant fields from Speaker to SpeakerForm."""
-        sf = SpeakerForm()
-        for field in sf.all_fields():
-            if hasattr(speaker, field.name):
-                setattr(sf, field.name, getattr(speaker, field.name))
-            elif field.name == "websafeKey":
-                setattr(sf, field.name, speaker.key.urlsafe())
-        sf.check_initialized()
-        return sf
-
-    def _createSpeakerObject(self, request):
-        """Create a speaker, returning SpeakerForm/request."""
-        # Preload necessary data items
-        user = endpoints.get_current_user()
-        if not user:
-            raise endpoints.UnauthorizedException('Authorization required')
-        user_id = user.email()
-        if not request.name:
-            raise endpoints.BadRequestException(
-                "Speaker 'name' field required")
-        # Copy SpeakerForm/ProtoRPC Message into dict
-        data = {
-            field.name: getattr(request, field.name) for field in
-                request.all_fields()
-        }
-        del data['websafeKey']
-        # Add default values for those missing (both data model and
-        # outbound Message)
-        for df in SPEAKER_DEFAULTS:
-            if data[df] in (None, []):
-                data[df] = SPEAKER_DEFAULTS[df]
-                setattr(request, df, SPEAKER_DEFAULTS[df])
-        # Create Speaker and return SpeakerForm
-        Speaker(**data).put()
-        return request
-
-###############################################################################
-###         Private Methods: Profiles
-###############################################################################
-
-    def _copyProfileToForm(self, prof):
-        """Copy relevant fields from Profile to ProfileForm."""
-        pf = ProfileForm()
-        for field in pf.all_fields():
-            if hasattr(prof, field.name):
-                # Convert t-shirt string to Enum; just copy others
-                if field.name == 'teeShirtSize':
-                    setattr(pf, field.name,
-                            getattr(TeeShirtSize, getattr(prof, field.name)))
-                else:
-                    setattr(pf, field.name, getattr(prof, field.name))
-        pf.check_initialized()
-        return pf
-
-    def _doProfile(self, save_request=None):
-        """Get Profile and return to user, possibly updating it first."""
-        prof = self._getProfileFromUser()
-        # If saveProfile(), process user-modifyable fields
-        if save_request:
-            for field in ('displayName', 'teeShirtSize'):
-                if hasattr(save_request, field):
-                    val = getattr(save_request, field)
-                    if val:
-                        print(val)
-                        setattr(prof, field, str(val))
-            prof.put()
-        # Return ProfileForm
-        return self._copyProfileToForm(prof)
-
-    def _getProfileFromUser(self):
-        """Return Profile from datastore, creating new one if non-existent."""
-        # Make sure user is authenticated
-        user = endpoints.get_current_user()
-        if not user:
-            raise endpoints.UnauthorizedException('Authorization required')
-        # Get Profile from datastore
-        user_id = user.email()
-        p_key = ndb.Key(Profile, user_id)
-        profile = p_key.get()
-        # Create new Profile if not there
-        if not profile:
-            profile = Profile(
-                key = p_key,
-                displayName = user.nickname(),
-                mainEmail= user.email(),
-                teeShirtSize = str(TeeShirtSize.NOT_SPECIFIED),
-            )
-            profile.put()
-        return profile
-
-###############################################################################
-###         Endpoints Methods: Conferences
+###         Conferences: Endpoints Methods
 ###############################################################################
 
     @endpoints.method(ConferenceForm, ConferenceForm, path='conference',
@@ -530,7 +435,48 @@ class ConferenceApi(remote.Service):
         return self._updateConferenceObject(request)
 
 ###############################################################################
-###         Endpoints Methods: Speakers
+###         Speakers: Private Methods
+###############################################################################
+
+    def _copySpeakerToForm(self, speaker):
+        """Copy relevant fields from Speaker to SpeakerForm."""
+        sf = SpeakerForm()
+        for field in sf.all_fields():
+            if hasattr(speaker, field.name):
+                setattr(sf, field.name, getattr(speaker, field.name))
+            elif field.name == "websafeKey":
+                setattr(sf, field.name, speaker.key.urlsafe())
+        sf.check_initialized()
+        return sf
+
+    def _createSpeakerObject(self, request):
+        """Create a speaker, returning SpeakerForm/request."""
+        # Preload necessary data items
+        user = endpoints.get_current_user()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
+        user_id = user.email()
+        if not request.name:
+            raise endpoints.BadRequestException(
+                "Speaker 'name' field required")
+        # Copy SpeakerForm/ProtoRPC Message into dict
+        data = {
+            field.name: getattr(request, field.name) for field in
+                request.all_fields()
+        }
+        del data['websafeKey']
+        # Add default values for those missing (both data model and
+        # outbound Message)
+        for df in SPEAKER_DEFAULTS:
+            if data[df] in (None, []):
+                data[df] = SPEAKER_DEFAULTS[df]
+                setattr(request, df, SPEAKER_DEFAULTS[df])
+        # Create Speaker and return SpeakerForm
+        Speaker(**data).put()
+        return request
+
+###############################################################################
+###         Speakers: Endpoints Methods
 ###############################################################################
 
     @endpoints.method(SpeakerForm, SpeakerForm, path='speaker',
@@ -555,7 +501,61 @@ class ConferenceApi(remote.Service):
         return self._copySpeakerToForm(speaker)
 
 ###############################################################################
-###         Endpoints Methods: Profiles
+###         Profiles: Private Methods
+###############################################################################
+
+    def _copyProfileToForm(self, prof):
+        """Copy relevant fields from Profile to ProfileForm."""
+        pf = ProfileForm()
+        for field in pf.all_fields():
+            if hasattr(prof, field.name):
+                # Convert t-shirt string to Enum; just copy others
+                if field.name == 'teeShirtSize':
+                    setattr(pf, field.name,
+                            getattr(TeeShirtSize, getattr(prof, field.name)))
+                else:
+                    setattr(pf, field.name, getattr(prof, field.name))
+        pf.check_initialized()
+        return pf
+
+    def _doProfile(self, save_request=None):
+        """Get Profile and return to user, possibly updating it first."""
+        prof = self._getProfileFromUser()
+        # If saveProfile(), process user-modifyable fields
+        if save_request:
+            for field in ('displayName', 'teeShirtSize'):
+                if hasattr(save_request, field):
+                    val = getattr(save_request, field)
+                    if val:
+                        print(val)
+                        setattr(prof, field, str(val))
+            prof.put()
+        # Return ProfileForm
+        return self._copyProfileToForm(prof)
+
+    def _getProfileFromUser(self):
+        """Return Profile from datastore, creating new one if non-existent."""
+        # Make sure user is authenticated
+        user = endpoints.get_current_user()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
+        # Get Profile from datastore
+        user_id = user.email()
+        p_key = ndb.Key(Profile, user_id)
+        profile = p_key.get()
+        # Create new Profile if not there
+        if not profile:
+            profile = Profile(
+                key = p_key,
+                displayName = user.nickname(),
+                mainEmail= user.email(),
+                teeShirtSize = str(TeeShirtSize.NOT_SPECIFIED),
+            )
+            profile.put()
+        return profile
+
+###############################################################################
+###         Profiles: Endpoints Methods
 ###############################################################################
 
     @endpoints.method(message_types.VoidMessage, ProfileForm,
