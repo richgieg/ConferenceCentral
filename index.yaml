@@ -112,81 +112,81 @@ indexes:
 #   = 12
 
 # Observe the first three index definitions below. The 'city' property is
-# assumed to be the target of an inequality filter (disregard the fact that
-# it may actually be the target of an equality filter, for now). Notice how
+# assumed to be the target of an inequality filter (even if it is the target
+# of an equality filter, however, it still serves its purpose). Notice how
 # each of the three index definitions references a unique member of the
 # remaining set of three properties.
 
 - kind: Conference
   properties:
-  - name: maxAttendees
-  - name: city
+  - name: maxAttendees    # equality target
+  - name: city            # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: month
-  - name: city
+  - name: month           # equality target
+  - name: city            # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: topics
-  - name: city
+  - name: topics          # equality target
+  - name: city            # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: city
-  - name: maxAttendees
+  - name: city            # equality target
+  - name: maxAttendees    # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: month
-  - name: maxAttendees
+  - name: month           # equality target
+  - name: maxAttendees    # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: topics
-  - name: maxAttendees
+  - name: topics          # equality target
+  - name: maxAttendees    # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: city
-  - name: month
+  - name: city            # equality target
+  - name: month           # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: maxAttendees
-  - name: month
+  - name: maxAttendees    # equality target
+  - name: month           # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: topics
-  - name: month
+  - name: topics          # equality target
+  - name: month           # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: city
-  - name: topics
+  - name: city            # equality target
+  - name: topics          # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: maxAttendees
-  - name: topics
+  - name: maxAttendees    # equality target
+  - name: topics          # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: month
-  - name: topics
+  - name: month           # equality target
+  - name: topics          # inequality target
   - name: name
 
 
@@ -227,94 +227,94 @@ indexes:
 #   = 12
 
 # Observe the first three index definitions below. The 'city' property is
-# assumed to be the target of an inequality filter (disregard the fact that
-# it may actually be the target of an equality filter, for now). Notice how the
+# assumed to be the target of an inequality filter (even if it is the target
+# of an equality filter, however, it still serves its purpose). Notice how the
 # first two fields in each of the three index definitions references one of the
 # three possible combinations of two members of the remaining set of three
 # properties. Remember, the order of the equality targets does not matter.
 
 - kind: Conference
   properties:
-  - name: maxAttendees
-  - name: month
-  - name: city
+  - name: maxAttendees    # equality target
+  - name: month           # equality target
+  - name: city            # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: maxAttendees
-  - name: topics
-  - name: city
+  - name: maxAttendees    # equality target
+  - name: topics          # equality target
+  - name: city            # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: month
-  - name: topics
-  - name: city
+  - name: month           # equality target
+  - name: topics          # equality target
+  - name: city            # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: city
-  - name: month
-  - name: maxAttendees
+  - name: city            # equality target
+  - name: month           # equality target
+  - name: maxAttendees    # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: city
-  - name: topics
-  - name: maxAttendees
+  - name: city            # equality target
+  - name: topics          # equality target
+  - name: maxAttendees    # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: month
-  - name: topics
-  - name: maxAttendees
+  - name: month           # equality target
+  - name: topics          # equality target
+  - name: maxAttendees    # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: city
-  - name: maxAttendees
-  - name: month
+  - name: city            # equality target
+  - name: maxAttendees    # equality target
+  - name: month           # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: city
-  - name: topics
-  - name: month
+  - name: city            # equality target
+  - name: topics          # equality target
+  - name: month           # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: maxAttendees
-  - name: topics
-  - name: month
+  - name: maxAttendees    # equality target
+  - name: topics          # equality target
+  - name: month           # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: city
-  - name: maxAttendees
-  - name: topics
+  - name: city            # equality target
+  - name: maxAttendees    # equality target
+  - name: topics          # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: city
-  - name: month
-  - name: topics
+  - name: city            # equality target
+  - name: month           # equality target
+  - name: topics          # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: maxAttendees
-  - name: month
-  - name: topics
+  - name: maxAttendees    # equality target
+  - name: month           # equality target
+  - name: topics          # inequality target
   - name: name
 
 
@@ -355,40 +355,40 @@ indexes:
 #   = 4
 
 # Observe the four index definitions below. The fourth property is assumed to
-# be the target of an inequality filter (disregard the fact that it may
-# actually be the target of an equality filter). Notice how the first three
-# fields in each of the four index definitions references the one possible
+# be the target of an inequality filter (even if it is the target of an
+# equality filter, however, it still serves its purpose). Notice how the first
+# three fields in each of the four index definitions references the one possible
 # combination of three members of the remaining set of three properties.
 # Remember, the order of the equality targets does not matter.
 
 - kind: Conference
   properties:
-  - name: maxAttendees
-  - name: month
-  - name: topics
-  - name: city
+  - name: maxAttendees    # equality target
+  - name: month           # equality target
+  - name: topics          # equality target
+  - name: city            # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: city
-  - name: month
-  - name: topics
-  - name: maxAttendees
+  - name: city            # equality target
+  - name: month           # equality target
+  - name: topics          # equality target
+  - name: maxAttendees    # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: city
-  - name: maxAttendees
-  - name: topics
-  - name: month
+  - name: city            # equality target
+  - name: maxAttendees    # equality target
+  - name: topics          # equality target
+  - name: month           # inequality target
   - name: name
 
 - kind: Conference
   properties:
-  - name: city
-  - name: maxAttendees
-  - name: month
-  - name: topics
+  - name: city            # equality target
+  - name: maxAttendees    # equality target
+  - name: month           # equality target
+  - name: topics          # inequality target
   - name: name
