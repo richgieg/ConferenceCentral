@@ -78,7 +78,7 @@ CONF_DEFAULTS = {
     "city": "Default City",
     "maxAttendees": 0,
     "seatsAvailable": 0,
-    "topics": [ "Default", "Topic" ],
+    "topics": ["Default", "Topic"],
 }
 
 
@@ -140,7 +140,7 @@ SPEAKER_GET_REQUEST = endpoints.ResourceContainer(
 class Session(ndb.Model):
     """Session object."""
     name = ndb.StringProperty(required=True)
-    highlights = ndb.StringProperty()
+    highlights = ndb.StringProperty(repeated=True)
     speakerWebsafeKey = ndb.StringProperty(required=True)
     duration = ndb.IntegerProperty()
     typeOfSession = ndb.StringProperty(default='NOT_SPECIFIED')
@@ -151,7 +151,7 @@ class Session(ndb.Model):
 class SessionForm(messages.Message):
     """Session inbound/outbound form message."""
     name = messages.StringField(1)
-    highlights = messages.StringField(2)
+    highlights = messages.StringField(2, repeated=True)
     speakerWebsafeKey = messages.StringField(3)
     duration = messages.IntegerField(4, variant=messages.Variant.INT32)
     typeOfSession = messages.EnumField('SessionType', 5)
@@ -170,7 +170,7 @@ class SessionType(messages.Enum):
 
 
 SESSION_DEFAULTS = {
-    "highlights": "Default highlights",
+    "highlights": ["Default", "Highlight"],
     "duration": 60,
     "startTime": "00:00",
     "typeOfSession": "NOT_SPECIFIED"
