@@ -8,7 +8,7 @@ $Id: conference.py,v 1.25 2014/05/24 23:42:19 wesc Exp wesc $
 
 created by wesc on 2014 apr 21
 
-Modified by Richard Gieg on 12/2/2015 for Udacity Full Stack Project #4
+Modified by Richard Gieg on 2015/12/20 for Udacity Full Stack Project #4
 
 """
 
@@ -25,6 +25,9 @@ from protorpc import message_types
 from protorpc import remote
 
 from models import BooleanMessage
+from models import CONF_DEFAULTS
+from models import CONF_GET_REQUEST
+from models import CONF_POST_REQUEST
 from models import Conference
 from models import ConferenceForm
 from models import ConferenceForms
@@ -34,6 +37,10 @@ from models import ConflictException
 from models import Profile
 from models import ProfileMiniForm
 from models import ProfileForm
+from models import Speaker
+from models import SPEAKER_DEFAULTS
+from models import SPEAKER_GET_REQUEST
+from models import SpeakerForm
 from models import StringMessage
 from models import TeeShirtSize
 from settings import WEB_CLIENT_ID
@@ -42,13 +49,6 @@ from settings import WEB_CLIENT_ID
 API_EXPLORER_CLIENT_ID = endpoints.API_EXPLORER_CLIENT_ID
 EMAIL_SCOPE = endpoints.EMAIL_SCOPE
 MEMCACHE_ANNOUNCEMENTS_KEY = "RECENT_ANNOUNCEMENTS"
-
-DEFAULTS = {
-    "city": "Default City",
-    "maxAttendees": 0,
-    "seatsAvailable": 0,
-    "topics": [ "Default", "Topic" ],
-}
 
 OPERATORS = {
     'EQ': '=',
@@ -65,16 +65,6 @@ FIELDS = {
     'MONTH': 'month',
     'MAX_ATTENDEES': 'maxAttendees',
 }
-
-CONF_GET_REQUEST = endpoints.ResourceContainer(
-    message_types.VoidMessage,
-    websafeConferenceKey=messages.StringField(1),
-)
-
-CONF_POST_REQUEST = endpoints.ResourceContainer(
-    ConferenceForm,
-    websafeConferenceKey=messages.StringField(1),
-)
 
 
 @endpoints.api(name='conference', version='v1',
@@ -188,10 +178,10 @@ class ConferenceApi(remote.Service):
         del data['organizerDisplayName']
         # Add default values for those missing (both data model and
         # outbound Message)
-        for df in DEFAULTS:
+        for df in CONF_DEFAULTS:
             if data[df] in (None, []):
-                data[df] = DEFAULTS[df]
-                setattr(request, df, DEFAULTS[df])
+                data[df] = CONF_DEFAULTS[df]
+                setattr(request, df, CONF_DEFAULTS[df])
         # Convert dates from strings to Date objects; set month based
         # on start_date
         if data['startDate']:
@@ -315,6 +305,47 @@ class ConferenceApi(remote.Service):
         conf.put()
         prof = ndb.Key(Profile, user_id).get()
         return self._copyConferenceToForm(conf, getattr(prof, 'displayName'))
+
+###############################################################################
+###         Private Methods: Speakers
+###############################################################################
+
+    def _copySpeakerToForm(self, speaker):
+        """Copy relevant fields from Speaker to SpeakerForm."""
+        sf = SpeakerForm()
+        for field in sf.all_fields():
+            if hasattr(speaker, field.name):
+                setattr(sf, field.name, getattr(speaker, field.name))
+            elif field.name == "websafeKey":
+                setattr(sf, field.name, speaker.key.urlsafe())
+        sf.check_initialized()
+        return sf
+
+    def _createSpeakerObject(self, request):
+        """Create a speaker, returning SpeakerForm/request."""
+        # Preload necessary data items
+        user = endpoints.get_current_user()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
+        user_id = user.email()
+        if not request.name:
+            raise endpoints.BadRequestException(
+                "Speaker 'name' field required")
+        # Copy SpeakerForm/ProtoRPC Message into dict
+        data = {
+            field.name: getattr(request, field.name) for field in
+                request.all_fields()
+        }
+        del data['websafeKey']
+        # Add default values for those missing (both data model and
+        # outbound Message)
+        for df in SPEAKER_DEFAULTS:
+            if data[df] in (None, []):
+                data[df] = SPEAKER_DEFAULTS[df]
+                setattr(request, df, SPEAKER_DEFAULTS[df])
+        # Create Speaker and return SpeakerForm
+        Speaker(**data).put()
+        return request
 
 ###############################################################################
 ###         Private Methods: Profiles
@@ -497,6 +528,31 @@ class ConferenceApi(remote.Service):
     def updateConference(self, request):
         """Update conference with provided fields and return updated info."""
         return self._updateConferenceObject(request)
+
+###############################################################################
+###         Endpoints Methods: Speakers
+###############################################################################
+
+    @endpoints.method(SpeakerForm, SpeakerForm, path='speaker',
+            http_method='POST', name='createSpeaker')
+    def createSpeaker(self, request):
+        """Create new speaker."""
+        return self._createSpeakerObject(request)
+
+    @endpoints.method(SPEAKER_GET_REQUEST, SpeakerForm,
+            path='speaker/{websafeConferenceKey}',
+            http_method='GET', name='getSpeaker')
+    def getSpeaker(self, request):
+        """Return requested speaker (by websafeConferenceKey)."""
+        # Get Speaker object from request; bail if not found
+        speaker = ndb.Key(urlsafe=request.websafeConferenceKey).get()
+        if not speaker:
+            raise endpoints.NotFoundException(
+                'No speaker found with key: %s' %
+                    request.websafeConferenceKey
+            )
+        # Return SpeakerForm
+        return self._copySpeakerToForm(speaker)
 
 ###############################################################################
 ###         Endpoints Methods: Profiles
