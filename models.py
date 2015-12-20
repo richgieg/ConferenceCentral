@@ -119,15 +119,66 @@ class SpeakerForm(messages.Message):
 
 
 SPEAKER_DEFAULTS = {
-    "company": "",
-    "email": "",
-    "phone": "",
-    "websiteUrl": "",
+    "company": "Default Company",
+    "email": "speaker@example.com",
+    "phone": "555-555-5555",
+    "websiteUrl": "http://www.example.com",
 }
 
 
 SPEAKER_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
+    websafeSpeakerKey=messages.StringField(1),
+)
+
+
+###############################################################################
+###         Models: Sessions
+###############################################################################
+
+
+class Session(ndb.Model):
+    """Session object."""
+    name = ndb.StringProperty(required=True)
+    highlights = ndb.StringProperty()
+    speakerWebsafeKey = ndb.StringProperty(required=True)
+    duration = ndb.IntegerProperty()
+    typeOfSession = ndb.StringProperty(default='NOT_SPECIFIED')
+    date = ndb.DateProperty()
+    startTime = ndb.StringProperty()
+
+
+class SessionForm(messages.Message):
+    """Session inbound/outbound form message."""
+    name = messages.StringField(1)
+    highlights = messages.StringField(2)
+    speakerWebsafeKey = messages.StringField(3)
+    duration = messages.IntegerField(4, variant=messages.Variant.INT32)
+    typeOfSession = messages.EnumField('SessionType', 5)
+    date = messages.StringField(6)
+    startTime = messages.StringField(7)
+    websafeKey = messages.StringField(8)
+
+
+class SessionType(messages.Enum):
+    """Session type enumeration value."""
+    NOT_SPECIFIED = 1
+    DEMONSTRATION = 2
+    LECTURE = 3
+    ROUNDTABLE = 4
+    WORKSHOP = 5
+
+
+SESSION_DEFAULTS = {
+    "highlights": "Default highlights",
+    "duration": 60,
+    "startTime": "00:00",
+    "typeOfSession": "NOT_SPECIFIED"
+}
+
+
+SESSION_POST_REQUEST = endpoints.ResourceContainer(
+    SessionForm,
     websafeConferenceKey=messages.StringField(1),
 )
 

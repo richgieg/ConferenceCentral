@@ -37,6 +37,11 @@ from models import ConflictException
 from models import Profile
 from models import ProfileMiniForm
 from models import ProfileForm
+from models import Session
+from models import SESSION_DEFAULTS
+from models import SESSION_POST_REQUEST
+from models import SessionForm
+from models import SessionType
 from models import Speaker
 from models import SPEAKER_DEFAULTS
 from models import SPEAKER_GET_REQUEST
@@ -485,13 +490,12 @@ class ConferenceApi(remote.Service):
         """Create new speaker."""
         return self._createSpeakerObject(request)
 
-    @endpoints.method(SPEAKER_GET_REQUEST, SpeakerForm,
-            path='speaker/{websafeConferenceKey}',
+    @endpoints.method(SPEAKER_GET_REQUEST, SpeakerForm, path='speaker',
             http_method='GET', name='getSpeaker')
     def getSpeaker(self, request):
         """Return requested speaker (by websafeConferenceKey)."""
         # Get Speaker object from request; bail if not found
-        speaker = ndb.Key(urlsafe=request.websafeConferenceKey).get()
+        speaker = ndb.Key(urlsafe=request.websafeSpeakerKey).get()
         if not speaker:
             raise endpoints.NotFoundException(
                 'No speaker found with key: %s' %
@@ -499,6 +503,106 @@ class ConferenceApi(remote.Service):
             )
         # Return SpeakerForm
         return self._copySpeakerToForm(speaker)
+
+###############################################################################
+###         Sessions: Private Methods
+###############################################################################
+
+    def _createSessionObject(self, request):
+        """Create a session, returning SessionForm/request."""
+        # Preload necessary data items
+        user = endpoints.get_current_user()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
+        user_id = user.email()
+        # Get the conference object
+        conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
+        if not conf:
+            raise endpoints.NotFoundException(
+                'No conference found with key: %s' %
+                    request.websafeConferenceKey
+                )
+        # Ensure that the current user is the conference organizer
+        if user_id != conf.organizerUserId:
+            raise endpoints.UnauthorizedException(
+                'Only the conference organize can create a new session')
+        # Ensure that the user submitted the required speaker property
+        if not request.speakerWebsafeKey:
+            raise endpoints.BadRequestException(
+                "Session 'speakerWebsafeKey' field required")
+        # Get the speaker object
+        speaker = ndb.Key(urlsafe=request.speakerWebsafeKey).get()
+        if not speaker:
+            raise endpoints.NotFoundException(
+                'No speaker found with key: %s' %
+                    request.speakerWebsafeKey
+                )
+        # Ensure that the user submitted the required name property
+        if not request.name:
+            raise endpoints.BadRequestException(
+                "Session 'name' field required")
+        # Copy SessionForm/ProtoRPC Message into dict
+        data = {
+            field.name: getattr(request, field.name) for field in
+                request.all_fields()
+        }
+        del data['websafeConferenceKey']
+        del data['websafeKey']
+        # Add default values for those missing (both data model and
+        # outbound Message)
+        for df in SESSION_DEFAULTS:
+            if data[df] in (None, []):
+                data[df] = SESSION_DEFAULTS[df]
+                if df == 'typeOfSession':
+                    setattr(request, df,
+                        getattr(SessionType, SESSION_DEFAULTS[df]))
+                else:
+                    setattr(request, df, SESSION_DEFAULTS[df])
+        # Ensure the string version of typeOfSession is what is stored
+        # in the NDB model
+        data['typeOfSession'] = str(data['typeOfSession'])
+        # Convert dates from strings to Date objects; set month based
+        # on start_date
+        if data['date']:
+            data['date'] = datetime.strptime(
+                data['date'][:10], "%Y-%m-%d").date()
+        # Create Session and return SessionForm
+        session = Session(**data)
+        session.put()
+        print session.typeOfSession
+        return self._copySessionToForm(session)
+
+    def _copySessionToForm(self, session):
+        """Copy relevant fields from Session to SessionForm."""
+        sf = SessionForm()
+        for field in sf.all_fields():
+            if hasattr(session, field.name):
+                # Convert date field to date string
+                if field.name == 'date':
+                    setattr(sf, field.name, str(getattr(session, field.name)))
+                elif field.name == 'typeOfSession':
+                    setattr(sf, field.name,
+                        getattr(SessionType, getattr(session, field.name)))
+                elif field.name == "websafeKey":
+                    setattr(sf, field.name, session.key.urlsafe())
+                else:
+                    setattr(sf, field.name, getattr(session, field.name))
+        sf.check_initialized()
+
+
+
+        return sf
+
+###############################################################################
+###         Sessions: Endpoints Methods
+###############################################################################
+
+    @endpoints.method(SESSION_POST_REQUEST, SessionForm,
+            path='conference/{websafeConferenceKey}/createSession',
+            http_method='POST', name='createSession')
+    def createSession(self, request):
+        """Create new session."""
+        return self._createSessionObject(request)
 
 ###############################################################################
 ###         Profiles: Private Methods
