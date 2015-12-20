@@ -266,7 +266,11 @@ class ConferenceApi(remote.Service):
             q = q.order(Conference.name)
         for filtr in filters:
             if filtr["field"] in ["month", "maxAttendees"]:
-                filtr["value"] = int(filtr["value"])
+                try:
+                    filtr["value"] = int(filtr["value"])
+                except ValueError:
+                    raise endpoints.BadRequestException(
+                        "Non-integer in integer field.")
             formatted_query = ndb.query.FilterNode(
                 filtr["field"], filtr["operator"], filtr["value"])
             q = q.filter(formatted_query)
