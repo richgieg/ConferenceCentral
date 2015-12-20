@@ -27,24 +27,6 @@ from protorpc import message_types
 ###############################################################################
 
 
-CONF_DEFAULTS = {
-    "city": "Default City",
-    "maxAttendees": 0,
-    "seatsAvailable": 0,
-    "topics": [ "Default", "Topic" ],
-}
-
-CONF_GET_REQUEST = endpoints.ResourceContainer(
-    message_types.VoidMessage,
-    websafeConferenceKey=messages.StringField(1),
-)
-
-CONF_POST_REQUEST = endpoints.ResourceContainer(
-    ConferenceForm,
-    websafeConferenceKey=messages.StringField(1),
-)
-
-
 class Conference(ndb.Model):
     """Conference object."""
     name = ndb.StringProperty(required=True)
@@ -92,22 +74,29 @@ class ConferenceQueryForms(messages.Message):
     filters = messages.MessageField(ConferenceQueryForm, 1, repeated=True)
 
 
-###############################################################################
-###         Models: Speakers
-###############################################################################
-
-
-SPEAKER_DEFAULTS = {
-    "company": "",
-    "email": "",
-    "phone": "",
-    "websiteUrl": "",
+CONF_DEFAULTS = {
+    "city": "Default City",
+    "maxAttendees": 0,
+    "seatsAvailable": 0,
+    "topics": [ "Default", "Topic" ],
 }
 
-SPEAKER_GET_REQUEST = endpoints.ResourceContainer(
+
+CONF_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
     websafeConferenceKey=messages.StringField(1),
 )
+
+
+CONF_POST_REQUEST = endpoints.ResourceContainer(
+    ConferenceForm,
+    websafeConferenceKey=messages.StringField(1),
+)
+
+
+###############################################################################
+###         Models: Speakers
+###############################################################################
 
 
 class Speaker(ndb.Model):
@@ -127,6 +116,20 @@ class SpeakerForm(messages.Message):
     phone = messages.StringField(4)
     websiteUrl = messages.StringField(5)
     websafeKey = messages.StringField(6)
+
+
+SPEAKER_DEFAULTS = {
+    "company": "",
+    "email": "",
+    "phone": "",
+    "websiteUrl": "",
+}
+
+
+SPEAKER_GET_REQUEST = endpoints.ResourceContainer(
+    message_types.VoidMessage,
+    websafeConferenceKey=messages.StringField(1),
+)
 
 
 ###############################################################################
