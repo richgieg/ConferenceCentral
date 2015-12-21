@@ -619,7 +619,7 @@ class ConferenceApi(remote.Service):
         # Retrieve all sessions that have a matching conference key, by type
         sessions = Session.query(
             Session.conference == confKey,
-            Session.typeOfSession == request.typeOfSession
+            Session.typeOfSession == str(request.typeOfSession)
         ).fetch()
         return sessions
 

@@ -197,7 +197,7 @@ SESSION_POST_REQUEST = endpoints.ResourceContainer(
 SESSIONTYPE_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
     websafeConferenceKey=messages.StringField(1, required=True),
-    typeOfSession=messages.StringField(2, required=True),
+    typeOfSession=messages.EnumField(SessionType, 2, required=True),
 )
 
 SESSION_SPEAKER_GET_REQUEST = endpoints.ResourceContainer(
