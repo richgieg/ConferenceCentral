@@ -571,10 +571,8 @@ class ConferenceApi(remote.Service):
                 data['date'][:10], "%Y-%m-%d").date()
         # Create Session and return SessionForm
         session = Session(**data)
+        session.conference = conf.key
         session.put()
-        # Add the new session to the corresponding conference
-        conf.sessions.append(session.key)
-        conf.put()
         return self._copySessionToForm(session)
 
     def _copySessionToForm(self, session):
@@ -597,15 +595,15 @@ class ConferenceApi(remote.Service):
 
     def _getConferenceSessions(self, request):
         """Retrieve all sessions associated with a conference."""
-        conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
-        if not conf:
-            raise endpoints.NotFoundException(
-                'No conference found with key: %s' %
+        try:
+            confKey = ndb.Key(urlsafe=request.websafeConferenceKey)
+        except:
+            raise endpoints.BadRequestException(
+                'Invalid conference key: %s' %
                     request.websafeConferenceKey
                 )
-        # Retrieve sessions using the list of session keys stored in the
-        # conference entity
-        sessions = ndb.get_multi(conf.sessions)
+        # Retrieve all sessions that have a matching conference key
+        sessions = Session.query(Session.conference == confKey).fetch()
         return sessions
 
 ###############################################################################

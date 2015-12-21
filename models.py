@@ -39,7 +39,6 @@ class Conference(ndb.Model):
     endDate = ndb.DateProperty()
     maxAttendees = ndb.IntegerProperty()
     seatsAvailable = ndb.IntegerProperty()
-    sessions = ndb.KeyProperty(repeated=True)
 
 
 class ConferenceForm(messages.Message):
@@ -147,6 +146,7 @@ class Session(ndb.Model):
     typeOfSession = ndb.StringProperty(default='NOT_SPECIFIED')
     date = ndb.DateProperty()
     startTime = ndb.StringProperty()
+    conference = ndb.KeyProperty()
 
 
 class SessionForm(messages.Message):
