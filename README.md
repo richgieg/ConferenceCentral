@@ -191,7 +191,7 @@ the speaker and session names. This should be handled using App Engine's Task Qu
 I implemented the following Endpoints API method to support the requirements of
 this task:
 
-- getFeaturedSpeaker
+- `getFeaturedSpeaker`
 
 
 ## Potential Extra Credit
