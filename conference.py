@@ -638,28 +638,42 @@ class ConferenceApi(remote.Service):
         if not user:
             raise endpoints.UnauthorizedException('Authorization required')
         user_id = user.email()
+        # Ensure that the user submitted the required conference key
+        if not request.websafeConferenceKey:
+            raise endpoints.BadRequestException(
+                "Session 'websafeConferenceKey' field required")
+        # Verify the conference key
+        confKey = ndb.Key(urlsafe=request.websafeConferenceKey)
+        if confKey.kind() != 'Conference':
+            raise endpoints.BadRequestException(
+                "Key 'websafeConferenceKey' is not a 'Conference' key")
         # Get the conference object
-        conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
+        conf = confKey.get()
         if not conf:
             raise endpoints.NotFoundException(
                 'No conference found with key: %s' %
                     request.websafeConferenceKey
-                )
+            )
         # Ensure that the current user is the conference organizer
         if user_id != conf.organizerUserId:
             raise endpoints.UnauthorizedException(
-                'Only the conference organize can create a new session')
-        # Ensure that the user submitted the required speaker property
+                'Only the conference organizer can create a new session')
+        # Ensure that the user submitted the required speaker key
         if not request.speakerWebsafeKey:
             raise endpoints.BadRequestException(
                 "Session 'speakerWebsafeKey' field required")
+        # Verify the speaker key
+        speakerKey = ndb.Key(urlsafe=request.speakerWebsafeKey)
+        if speakerKey.kind() != 'Speaker':
+            raise endpoints.BadRequestException(
+                "Key 'speakerWebsafeKey' is not a 'Speaker' key")
         # Get the speaker object
-        speaker = ndb.Key(urlsafe=request.speakerWebsafeKey).get()
+        speaker = speakerKey.get()
         if not speaker:
             raise endpoints.NotFoundException(
                 'No speaker found with key: %s' %
                     request.speakerWebsafeKey
-                )
+            )
         # Ensure that the user submitted the required name property
         if not request.name:
             raise endpoints.BadRequestException(
