@@ -62,6 +62,7 @@ from settings import WEB_CLIENT_ID
 API_EXPLORER_CLIENT_ID = endpoints.API_EXPLORER_CLIENT_ID
 EMAIL_SCOPE = endpoints.EMAIL_SCOPE
 MEMCACHE_ANNOUNCEMENTS_KEY = "RECENT_ANNOUNCEMENTS"
+MEMCACHE_FEATURED_SPEAKER_KEY = "FEATURED_SPEAKER"
 
 OPERATORS = {
     'EQ': '=',
@@ -527,6 +528,35 @@ class ConferenceApi(remote.Service):
         Speaker(**data).put()
         return request
 
+    @staticmethod
+    def _updateFeaturedSpeaker(websafeSpeakerKey, websafeConferenceKey):
+        """Check if the specified speaker is speaking at multiple sessions
+        in the specified conference, and create memcache entry if so.
+        """
+        # Get all sessions by the specified speaker at the specified
+        # conference. Use a projection query, since the only information we're
+        # interested in from the session entities is their name.
+        confKey = ndb.Key(urlsafe=websafeConferenceKey)
+        sessionsBySpeaker = Session.query(
+            Session.speakerWebsafeKey == websafeSpeakerKey,
+            Session.conference == confKey
+        ).fetch(projection=[Session.name])
+        # If there are fewer than two sessions, return immediately since
+        # there is nothing left to do
+        if len(sessionsBySpeaker) < 2:
+            return
+        # Put the session names into a list, alphabetically
+        sessionNames = sorted([s.name for s in sessionsBySpeaker])
+        # Retrieve the speaker's name
+        speakerName = ndb.Key(urlsafe=websafeSpeakerKey).get().name
+        # Generate the featured speaker message
+        featuredSpeakerMsg = (
+            'Our featured speaker is {}, who will be speaking at the following '
+            'sessions: {}'.format(speakerName, ', '.join(sessionNames))
+        )
+        # Set the memcache entry to the new featured speaker message
+        memcache.set(MEMCACHE_FEATURED_SPEAKER_KEY, featuredSpeakerMsg)
+
 ###############################################################################
 ###         Speakers: Endpoints Methods
 ###############################################################################
@@ -655,6 +685,13 @@ class ConferenceApi(remote.Service):
         session = Session(**data)
         session.conference = conf.key
         session.put()
+        # Add a task to task queue which checks if the speaker of this session
+        # should be the new featured speaker
+        taskqueue.add(params={'websafeSpeakerKey': request.speakerWebsafeKey,
+            'websafeConferenceKey': request.websafeConferenceKey},
+            url='/tasks/update_featured_speaker'
+        )
+        # Return SessionForm object
         return self._copySessionToForm(session)
 
     def _copySessionToForm(self, session):
