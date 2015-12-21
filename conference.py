@@ -653,21 +653,8 @@ class ConferenceApi(remote.Service):
         user = endpoints.get_current_user()
         if not user:
             raise endpoints.UnauthorizedException('Authorization required')
-        # Ensure the session key is valid
-        try:
-            key = ndb.Key(urlsafe=request.websafeSessionKey)
-        except:
-            raise endpoints.BadRequestException(
-                'Invalid session key: %s' %
-                    request.websafeSessionKey
-                )
-        # Ensure the session actually exists
-        session = key.get()
-        if not session:
-            raise endpoints.NotFoundException(
-                'No session found with key: %s' %
-                    request.websafeSessionKey
-                )
+        # Verify that the session actually exists
+        session = _getEntityByWebsafeKey(request.websafeSessionKey, 'Session')
         profile = self._getProfileFromUser()
         if request.websafeSessionKey not in profile.sessionWishlist:
             profile.sessionWishlist.append(request.websafeSessionKey)
@@ -690,8 +677,7 @@ class ConferenceApi(remote.Service):
             raise endpoints.UnauthorizedException(
                 'Only the conference organizer can create a new session')
         # Verify that the speaker exists
-        speaker = _getEntityByWebsafeKey(request.speakerWebsafeKey,
-                                         'Speaker')
+        speaker = _getEntityByWebsafeKey(request.speakerWebsafeKey, 'Speaker')
         # Ensure that the user submitted the required name property
         if not request.name:
             raise endpoints.BadRequestException(
@@ -839,14 +825,6 @@ class ConferenceApi(remote.Service):
         user = endpoints.get_current_user()
         if not user:
             raise endpoints.UnauthorizedException('Authorization required')
-        # Ensure the session key is valid
-        try:
-            key = ndb.Key(urlsafe=request.websafeSessionKey)
-        except:
-            raise endpoints.BadRequestException(
-                'Invalid session key: %s' %
-                    request.websafeSessionKey
-                )
         profile = self._getProfileFromUser()
         if request.websafeSessionKey in profile.sessionWishlist:
             profile.sessionWishlist.remove(request.websafeSessionKey)
