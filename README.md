@@ -192,3 +192,18 @@ I implemented the following Endpoints API method to support the requirements of
 this task:
 
 - getFeaturedSpeaker
+
+
+## Potential Extra Credit
+
+While working on this project I noticed a bug when unregistering from a conference
+through the front-end. The number which represents the quantity of people registered
+for the conference became a seemingly-random negative number. I ended up digging in
+to the issue and it turns out the negative number wasn't random at all, but it was
+caused by the back-end code returning a numeric value as a string in the JSON used
+to render the page. Havoc then ensued once JavaScript performed calculations with
+actual integers and strings containing integer representations. An in-depth analysis
+can be found in the description for the [issue I opened](https://github.com/udacity/ud858/issues/7)
+on GitHub. The repaired code I committed can be found [here](https://github.com/udacity/ud858/commit/82822d647278c6516997b8d65c0c93657aef4775).
+The pull request I submitted, which was merged by a Udacity engineer, can be found
+[here](https://github.com/udacity/ud858/pull/8).
