@@ -518,7 +518,6 @@ class ConferenceApi(remote.Service):
         user = endpoints.get_current_user()
         if not user:
             raise endpoints.UnauthorizedException('Authorization required')
-        user_id = user.email()
         # Ensure the session key is valid
         try:
             key = ndb.Key(urlsafe=request.websafeSessionKey)
@@ -667,13 +666,23 @@ class ConferenceApi(remote.Service):
         ).fetch()
         return sessions
 
+    def _getSessionsInWishlist(self):
+        """Retrieve all sessions in the user's wishlist."""
+        user = endpoints.get_current_user()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
+        profile = self._getProfileFromUser()
+        # Build list of real keys from list of websafe keys
+        keys = [ndb.Key(urlsafe=wssk) for wssk in profile.sessionWishlist]
+        # Fetch the entities and return them
+        return ndb.get_multi(keys)
+
     def _removeSessionFromWishlist(self, request):
         """Removes a session from the user's wishlist, returning a boolean."""
         # Preload necessary data items
         user = endpoints.get_current_user()
         if not user:
             raise endpoints.UnauthorizedException('Authorization required')
-        user_id = user.email()
         # Ensure the session key is valid
         try:
             key = ndb.Key(urlsafe=request.websafeSessionKey)
@@ -727,7 +736,7 @@ class ConferenceApi(remote.Service):
         )
 
     @endpoints.method(SESSION_SPEAKER_GET_REQUEST, SessionForms,
-            path='/sessions/byspeaker/{websafeSpeakerKey}',
+            path='sessions/byspeaker/{websafeSpeakerKey}',
             http_method='GET',
             name='getSessionsBySpeaker')
     def getSessionsBySpeaker(self, request):
@@ -739,18 +748,30 @@ class ConferenceApi(remote.Service):
         )
 
     @endpoints.method(SESSION_GET_REQUEST, BooleanMessage,
-            path='/sessions/addtowishlist/{websafeSessionKey}',
+            path='sessions/addtowishlist/{websafeSessionKey}',
             http_method='POST', name='addSessionToWishlist')
     def addSessionToWishlist(self, request):
         """Add a session to the user's wishlist."""
         return self._addSessionToWishlist(request)
 
     @endpoints.method(SESSION_GET_REQUEST, BooleanMessage,
-            path='/sessions/removefromwishlist/{websafeSessionKey}',
-            http_method='POST', name='removeSessionFromWishlist')
+            path='sessions/removefromwishlist/{websafeSessionKey}',
+            http_method='DELETE', name='removeSessionFromWishlist')
     def removeSessionFromWishlist(self, request):
         """Removes a session from the user's wishlist."""
         return self._removeSessionFromWishlist(request)
+
+    @endpoints.method(message_types.VoidMessage, SessionForms,
+            path='sessions/wishlist',
+            http_method='GET',
+            name='getSessionsInWishlist')
+    def getSessionsInWishlist(self, request):
+        """Get list of sessions in the user's wishlist."""
+        sessions = self._getSessionsInWishlist()
+        # Return individual SessionForm object per Session
+        return SessionForms(
+            items=[self._copySessionToForm(session) for session in sessions]
+        )
 
 ###############################################################################
 ###         Profiles: Private Methods
