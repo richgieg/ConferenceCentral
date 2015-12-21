@@ -161,6 +161,11 @@ class SessionForm(messages.Message):
     websafeKey = messages.StringField(8)
 
 
+class SessionForms(messages.Message):
+    """Multiple Session outbound form message."""
+    items = messages.MessageField(SessionForm, 1, repeated=True)
+
+
 class SessionType(messages.Enum):
     """Session type enumeration value."""
     NOT_SPECIFIED = 1
@@ -181,6 +186,12 @@ SESSION_DEFAULTS = {
 SESSION_POST_REQUEST = endpoints.ResourceContainer(
     SessionForm,
     websafeConferenceKey=messages.StringField(1),
+)
+
+SESSIONTYPE_GET_REQUEST = endpoints.ResourceContainer(
+    message_types.VoidMessage,
+    websafeConferenceKey=messages.StringField(1),
+    type=messages.StringField(2),
 )
 
 

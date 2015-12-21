@@ -40,7 +40,9 @@ from models import ProfileForm
 from models import Session
 from models import SESSION_DEFAULTS
 from models import SESSION_POST_REQUEST
+from models import SESSIONTYPE_GET_REQUEST
 from models import SessionForm
+from models import SessionForms
 from models import SessionType
 from models import Speaker
 from models import SPEAKER_DEFAULTS
@@ -593,6 +595,19 @@ class ConferenceApi(remote.Service):
         sf.check_initialized()
         return sf
 
+    def _getConferenceSessions(self, request):
+        """Retrieve all sessions associated with a conference."""
+        conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
+        if not conf:
+            raise endpoints.NotFoundException(
+                'No conference found with key: %s' %
+                    request.websafeConferenceKey
+                )
+        # Retrieve sessions using the list of session keys stored in the
+        # conference entity
+        sessions = ndb.get_multi(conf.sessions)
+        return sessions
+
 ###############################################################################
 ###         Sessions: Endpoints Methods
 ###############################################################################
@@ -603,6 +618,18 @@ class ConferenceApi(remote.Service):
     def createSession(self, request):
         """Create new session."""
         return self._createSessionObject(request)
+
+    @endpoints.method(CONF_GET_REQUEST, SessionForms,
+            path='conference/{websafeConferenceKey}/sessions',
+            http_method='POST',
+            name='getConferenceSessions')
+    def getConferenceSessions(self, request):
+        """Get list of sessions associated with a conference."""
+        sessions = self._getConferenceSessions(request)
+        # Return individual SessionForm object per Session
+        return SessionForms(
+            items=[self._copySessionToForm(session) for session in sessions]
+        )
 
 ###############################################################################
 ###         Profiles: Private Methods
