@@ -102,3 +102,16 @@ this task:
 **Additional:**
 - createSpeaker
 - getSpeakers
+
+
+## Task Two: Implementation
+
+I implemented the following Endpoints API methods to support the requirements of
+this task:
+
+**Required:**
+- addSessionToWishlist
+- getSessionsInWishlist
+
+**Additional:**
+- removeSessionFromWishlist
