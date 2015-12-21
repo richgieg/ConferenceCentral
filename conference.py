@@ -50,6 +50,7 @@ from models import Speaker
 from models import SPEAKER_DEFAULTS
 from models import SPEAKER_GET_REQUEST
 from models import SpeakerForm
+from models import SpeakerForms
 from models import StringMessage
 from models import TeeShirtSize
 from settings import WEB_CLIENT_ID
@@ -507,6 +508,16 @@ class ConferenceApi(remote.Service):
             )
         # Return SpeakerForm
         return self._copySpeakerToForm(speaker)
+
+    @endpoints.method(message_types.VoidMessage, SpeakerForms,
+            path='speakers', http_method='GET', name='getSpeakers')
+    def getSpeakers(self, request):
+        """Get list of all speakers in the system."""
+        speakers = Speaker.query().order(Speaker.name).fetch()
+        # Return individual SpeakerForm object per Speaker
+        return SpeakerForms(
+            items=[self._copySpeakerToForm(speaker) for speaker in speakers]
+        )
 
 ###############################################################################
 ###         Sessions: Private Methods

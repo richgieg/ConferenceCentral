@@ -118,6 +118,11 @@ class SpeakerForm(messages.Message):
     websafeKey = messages.StringField(6)
 
 
+class SpeakerForms(messages.Message):
+    """Multiple Speaker outbound form message."""
+    items = messages.MessageField(SpeakerForm, 1, repeated=True)
+
+
 SPEAKER_DEFAULTS = {
     "company": "Default Company",
     "email": "speaker@example.com",
