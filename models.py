@@ -189,16 +189,24 @@ SESSION_DEFAULTS = {
 }
 
 
+SESSION_GET_REQUEST = endpoints.ResourceContainer(
+    message_types.VoidMessage,
+    websafeSessionKey=messages.StringField(1, required=True),
+)
+
+
 SESSION_POST_REQUEST = endpoints.ResourceContainer(
     SessionForm,
-    websafeConferenceKey=messages.StringField(1),
+    websafeConferenceKey=messages.StringField(1, required=True),
 )
+
 
 SESSIONTYPE_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
     websafeConferenceKey=messages.StringField(1, required=True),
     typeOfSession=messages.EnumField(SessionType, 2, required=True),
 )
+
 
 SESSION_SPEAKER_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
@@ -217,6 +225,7 @@ class Profile(ndb.Model):
     mainEmail = ndb.StringProperty()
     teeShirtSize = ndb.StringProperty(default='NOT_SPECIFIED')
     conferenceKeysToAttend = ndb.StringProperty(repeated=True)
+    sessionWishlist = ndb.StringProperty(repeated=True)
 
 
 class ProfileForm(messages.Message):

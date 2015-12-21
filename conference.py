@@ -39,6 +39,7 @@ from models import ProfileMiniForm
 from models import ProfileForm
 from models import Session
 from models import SESSION_DEFAULTS
+from models import SESSION_GET_REQUEST
 from models import SESSION_POST_REQUEST
 from models import SESSION_SPEAKER_GET_REQUEST
 from models import SESSIONTYPE_GET_REQUEST
@@ -511,6 +512,34 @@ class ConferenceApi(remote.Service):
 ###         Sessions: Private Methods
 ###############################################################################
 
+    def _addSessionToWishlist(self, request):
+        """Add a session to the user's wishlist, returning a boolean."""
+        # Preload necessary data items
+        user = endpoints.get_current_user()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
+        user_id = user.email()
+        # Ensure the session key is valid
+        try:
+            key = ndb.Key(urlsafe=request.websafeSessionKey)
+        except:
+            raise endpoints.BadRequestException(
+                'Invalid session key: %s' %
+                    request.websafeSessionKey
+                )
+        # Ensure the session actually exists
+        session = key.get()
+        if not session:
+            raise endpoints.NotFoundException(
+                'No session found with key: %s' %
+                    request.websafeSessionKey
+                )
+        profile = self._getProfileFromUser()
+        if request.websafeSessionKey not in profile.sessionWishlist:
+            profile.sessionWishlist.append(request.websafeSessionKey)
+            profile.put()
+        return BooleanMessage(data=True)
+
     @ndb.transactional(xg=True)
     def _createSessionObject(self, request):
         """Create a session, returning SessionForm/request."""
@@ -638,6 +667,30 @@ class ConferenceApi(remote.Service):
         ).fetch()
         return sessions
 
+    def _removeSessionFromWishlist(self, request):
+        """Removes a session from the user's wishlist, returning a boolean."""
+        # Preload necessary data items
+        user = endpoints.get_current_user()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
+        user_id = user.email()
+        # Ensure the session key is valid
+        try:
+            key = ndb.Key(urlsafe=request.websafeSessionKey)
+        except:
+            raise endpoints.BadRequestException(
+                'Invalid session key: %s' %
+                    request.websafeSessionKey
+                )
+        profile = self._getProfileFromUser()
+        if request.websafeSessionKey in profile.sessionWishlist:
+            profile.sessionWishlist.remove(request.websafeSessionKey)
+            profile.put()
+            retval = True
+        else:
+            retval = False
+        return BooleanMessage(data=retval)
+
 ###############################################################################
 ###         Sessions: Endpoints Methods
 ###############################################################################
@@ -674,7 +727,7 @@ class ConferenceApi(remote.Service):
         )
 
     @endpoints.method(SESSION_SPEAKER_GET_REQUEST, SessionForms,
-            path='/sessionsbyspeaker/{websafeSpeakerKey}',
+            path='/sessions/byspeaker/{websafeSpeakerKey}',
             http_method='GET',
             name='getSessionsBySpeaker')
     def getSessionsBySpeaker(self, request):
@@ -684,6 +737,20 @@ class ConferenceApi(remote.Service):
         return SessionForms(
             items=[self._copySessionToForm(session) for session in sessions]
         )
+
+    @endpoints.method(SESSION_GET_REQUEST, BooleanMessage,
+            path='/sessions/addtowishlist/{websafeSessionKey}',
+            http_method='POST', name='addSessionToWishlist')
+    def addSessionToWishlist(self, request):
+        """Add a session to the user's wishlist."""
+        return self._addSessionToWishlist(request)
+
+    @endpoints.method(SESSION_GET_REQUEST, BooleanMessage,
+            path='/sessions/removefromwishlist/{websafeSessionKey}',
+            http_method='POST', name='removeSessionFromWishlist')
+    def removeSessionFromWishlist(self, request):
+        """Removes a session from the user's wishlist."""
+        return self._removeSessionFromWishlist(request)
 
 ###############################################################################
 ###         Profiles: Private Methods
