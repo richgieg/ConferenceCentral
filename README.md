@@ -104,7 +104,7 @@ this task:
 - `getSpeakers`
 
 
-## Task Two: Implementation
+## Task Two: Session Wishlists
 
 *Users should be able to mark some sessions that they are interested in and
 retrieve their own current wishlist.*
@@ -158,3 +158,10 @@ this task:
 
 - `getConferencesByTopicSearch`
 - `getSessionsByHighlightSearch`
+
+
+## Task Three: Query Problem
+
+*Imagine a user doesn't like workshop sessions, nor sessions that start after 7:00pm.
+How would you handle a query for all non-workshop sessions before 7:00pm? What is
+the problem for implementing this query? How would you solve it?*
