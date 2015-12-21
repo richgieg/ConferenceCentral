@@ -40,6 +40,7 @@ from models import ProfileForm
 from models import Session
 from models import SESSION_DEFAULTS
 from models import SESSION_POST_REQUEST
+from models import SESSION_SPEAKER_GET_REQUEST
 from models import SESSIONTYPE_GET_REQUEST
 from models import SessionForm
 from models import SessionForms
@@ -622,12 +623,27 @@ class ConferenceApi(remote.Service):
         ).fetch()
         return sessions
 
+    def _getSessionsBySpeaker(self, request):
+        """Retrieve all sessions given by a particular speaker."""
+        try:
+            speakerKey = ndb.Key(urlsafe=request.websafeSpeakerKey)
+        except:
+            raise endpoints.BadRequestException(
+                'Invalid speaker key: %s' %
+                    request.websafeSpeakerKey
+                )
+        # Retrieve all sessions that have a matching speaker key
+        sessions = Session.query(
+            Session.speakerWebsafeKey == request.websafeSpeakerKey
+        ).fetch()
+        return sessions
+
 ###############################################################################
 ###         Sessions: Endpoints Methods
 ###############################################################################
 
     @endpoints.method(SESSION_POST_REQUEST, SessionForm,
-            path='conference/{websafeConferenceKey}/createSession',
+            path='conference/{websafeConferenceKey}/createsession',
             http_method='POST', name='createSession')
     def createSession(self, request):
         """Create new session."""
@@ -646,12 +662,24 @@ class ConferenceApi(remote.Service):
         )
 
     @endpoints.method(SESSIONTYPE_GET_REQUEST, SessionForms,
-            path='conference/{websafeConferenceKey}/sessionsByType',
+            path='conference/{websafeConferenceKey}/sessionsbytype',
             http_method='GET',
             name='getConferenceSessionsByType')
     def getConferenceSessionsByType(self, request):
         """Get list of sessions associated with a conference (by type)."""
         sessions = self._getConferenceSessionsByType(request)
+        # Return individual SessionForm object per Session
+        return SessionForms(
+            items=[self._copySessionToForm(session) for session in sessions]
+        )
+
+    @endpoints.method(SESSION_SPEAKER_GET_REQUEST, SessionForms,
+            path='/sessionsbyspeaker/{websafeSpeakerKey}',
+            http_method='GET',
+            name='getSessionsBySpeaker')
+    def getSessionsBySpeaker(self, request):
+        """Get list of sessions given by particular speaker."""
+        sessions = self._getSessionsBySpeaker(request)
         # Return individual SessionForm object per Session
         return SessionForms(
             items=[self._copySessionToForm(session) for session in sessions]

@@ -200,6 +200,11 @@ SESSIONTYPE_GET_REQUEST = endpoints.ResourceContainer(
     typeOfSession=messages.StringField(2, required=True),
 )
 
+SESSION_SPEAKER_GET_REQUEST = endpoints.ResourceContainer(
+    message_types.VoidMessage,
+    websafeSpeakerKey=messages.StringField(1, required=True),
+)
+
 
 ###############################################################################
 ###         Models: Profiles
