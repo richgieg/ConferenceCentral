@@ -231,6 +231,13 @@ SESSION_HIGHLIGHTS_GET_REQUEST = endpoints.ResourceContainer(
 )
 
 
+SESSION_DOUBLE_INEQUALITY_GET_REQUEST = endpoints.ResourceContainer(
+    message_types.VoidMessage,
+    maxStartTime=messages.StringField(1, required=True),
+    sessionTypeToAvoid=messages.EnumField(SessionType, 2, required=True),
+)
+
+
 ###############################################################################
 ###         Models: Profiles
 ###############################################################################

@@ -40,6 +40,7 @@ from models import ProfileMiniForm
 from models import ProfileForm
 from models import Session
 from models import SESSION_DEFAULTS
+from models import SESSION_DOUBLE_INEQUALITY_GET_REQUEST
 from models import SESSION_GET_REQUEST
 from models import SESSION_HIGHLIGHTS_GET_REQUEST
 from models import SESSION_POST_REQUEST
@@ -730,6 +731,22 @@ class ConferenceApi(remote.Service):
         ).fetch()
         return sessions
 
+    def _getSessionsDoubleInequalityDemo(self, request):
+        """Demonstrates my solution to the double-inequality query problem."""
+        # Get list of session types from the enum class, then remove the
+        # sessionTypeToAvoid value from it. This leaves all the session types
+        # the user still wants in their search.
+        sessionTypes = SessionType.to_dict().keys()
+        sessionTypes.remove(str(request.sessionTypeToAvoid))
+        # Generate a list of equality filters from the sessionTypes list
+        equalityFilters = [Session.typeOfSession == st for st in sessionTypes]
+        # Construct query, utilizing the list of equality filters in an OR
+        # function. Add the startTime inequality filter. Then execute.
+        query = Session.query(ndb.OR(*equalityFilters))
+        query = query.filter(Session.startTime <= request.maxStartTime)
+        sessions = query.order(Session.startTime).fetch()
+        return sessions
+
     def _getSessionsInWishlist(self):
         """Retrieve all sessions in the user's wishlist."""
         user = endpoints.get_current_user()
@@ -818,6 +835,18 @@ class ConferenceApi(remote.Service):
     def getSessionsBySpeaker(self, request):
         """Get list of sessions given by particular speaker."""
         sessions = self._getSessionsBySpeaker(request)
+        # Return individual SessionForm object per Session
+        return SessionForms(
+            items=[self._copySessionToForm(session) for session in sessions]
+        )
+
+    @endpoints.method(SESSION_DOUBLE_INEQUALITY_GET_REQUEST, SessionForms,
+            path='sessions/doubleinequality',
+            http_method='GET',
+            name='getSessionsDoubleInequalityDemo')
+    def getSessionsDoubleInequalityDemo(self, request):
+        """Demonstrates my solution to the double-inequality query problem."""
+        sessions = self._getSessionsDoubleInequalityDemo(request)
         # Return individual SessionForm object per Session
         return SessionForms(
             items=[self._copySessionToForm(session) for session in sessions]

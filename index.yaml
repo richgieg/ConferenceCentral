@@ -404,3 +404,9 @@ indexes:
   properties:
   - name: highlights
   - name: name
+
+# Required by getSessionsDoubleInequalityDemo
+- kind: Session
+  properties:
+  - name: typeOfSession
+  - name: startTime
