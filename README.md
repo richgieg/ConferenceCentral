@@ -47,3 +47,10 @@ with the other API methods. Keep in mind, some require input from you in
 order to accomplish their task. Google has engineered a very friendly
 interface for the API explorer, so it should be fairly obvious when an API
 method requires input to execute.
+
+
+## Info for Udacity Project Reviewer
+
+The following sections contain my written responses to application design
+questions that were presented as part of this project, as well as additional
+information as it is deemed necessary.
