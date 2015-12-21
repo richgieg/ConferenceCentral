@@ -570,6 +570,7 @@ class ConferenceApi(remote.Service):
         # Create Session and return SessionForm
         session = Session(**data)
         session.put()
+        # Add the new session to the corresponding conference
         conf.sessions.append(session.key)
         conf.put()
         return self._copySessionToForm(session)
