@@ -399,14 +399,22 @@ indexes:
 ###     Additional Indexes (Task 3)
 ###############################################################################
 
-# Required by getSessionsByHighlightSearch
+# Required by ConferenceApi.getSessionsByHighlightSearch
 - kind: Session
   properties:
   - name: highlights
   - name: name
 
-# Required by getSessionsDoubleInequalityDemo
+# Required by ConferenceApi.getSessionsDoubleInequalityDemo
 - kind: Session
   properties:
   - name: typeOfSession
   - name: startTime
+
+# Required by ConferenceApi._updateFeaturedSpeaker (necessary because I use
+# a projection query to retrieve the name property)
+- kind: Session
+  properties:
+  - name: conference
+  - name: speakerWebsafeKey
+  - name: name
