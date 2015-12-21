@@ -75,8 +75,8 @@ to avoid using the ancestor relationship in favor of using a foreign key
 type of relationship. The session kind defines a KeyProperty field in which
 a session entity stores the key for the conference entity to which it belongs.
 Similarly, a session entity also stores the key for the speaker entity that
-represents the speaker who is hosting the session. Going the ancestor route
-may make queries look a little neater, however, I've learned throughout the
+represents the speaker who is hosting the session. Although going the ancestor route
+may make queries look a little neater, I've learned throughout the
 "Building Scalable Apps in Python" course that it's often the best decision to
 utilize the eventual consistency model of the datastore unless it's absolutely
 necessary to guarantee strong consistency. This is due to the fact that greater
