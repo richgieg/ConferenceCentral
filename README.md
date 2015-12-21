@@ -66,8 +66,8 @@ additional data describing the speakers, which would in turn be helpful
 to the users and administrators of the application. Also, storing only
 the speaker's name as a string, rather than creating an entity, could lead
 to name collisions. This would be a big problem for the getSessionsBySpeaker
-API, which would return all sessions hosted by a speaker with the name
-"John Smith", for example, without any clue as to whether or not all sessions
+API, which would return all sessions hosted by speakers with the name
+"John Smith", for example, without any clue as to whether or not any sessions
 are actually hosted by the same "John Smith".
 
 When modeling the relationship between conferences and sessions, I decided
