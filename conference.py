@@ -81,6 +81,50 @@ FIELDS = {
 }
 
 
+def _getEntityByWebsafeKey(websafeKey, kind):
+    """Attempts to retrieve entity, performing verification in the process.
+
+    Args:
+        websafeKey (string): Websafe key that is used to locate the entity.
+        kind (string): Used to ensure that the websafe key represents the
+            desired kind. For example, "Session".
+
+    Returns:
+        If websafeKey is not None, is valid, is of the correct kind, and
+        the entity with the ID it references is located, the entity is
+        returned. In any other case, an Endpoints exception is raised.
+
+    Raises:
+        endpoints.BadRequestException: Occurs if the websafeKey argument
+            is either equal to None, not able to be decoded or not of the
+            desired kind.
+        endpoints.NotFoundException: Occurs if the websafeKey passes all
+            tests but the entity is not located.
+    """
+    # Check that websafeKey is not None
+    if not websafeKey:
+        raise endpoints.BadRequestException(
+            "Websafe key not provided for '%s'" % kind)
+    # Try to decode the websafe key into a real key
+    try:
+        key = ndb.Key(urlsafe=websafeKey)
+    except:
+        raise endpoints.BadRequestException(
+            "Websafe key provided for '%s' could not be decoded: %s" %
+                (kind, websafeKey))
+    # Ensure that the key is of the desired kind
+    if key.kind() != kind:
+        raise endpoints.BadRequestException(
+            "Websafe key is not of the '%s' kind: %s" % (kind, websafeKey))
+    # Get the entity
+    entity = key.get()
+    if not entity:
+        raise endpoints.NotFoundException(
+            "No '%s' entity found using websafe key: %s" %
+                (kind, websafeKey))
+    return entity
+
+
 @endpoints.api(name='conference', version='v1',
     allowed_client_ids=[WEB_CLIENT_ID, API_EXPLORER_CLIENT_ID],
     scopes=[EMAIL_SCOPE])
@@ -638,42 +682,16 @@ class ConferenceApi(remote.Service):
         if not user:
             raise endpoints.UnauthorizedException('Authorization required')
         user_id = user.email()
-        # Ensure that the user submitted the required conference key
-        if not request.websafeConferenceKey:
-            raise endpoints.BadRequestException(
-                "Session 'websafeConferenceKey' field required")
-        # Verify the conference key
-        confKey = ndb.Key(urlsafe=request.websafeConferenceKey)
-        if confKey.kind() != 'Conference':
-            raise endpoints.BadRequestException(
-                "Key 'websafeConferenceKey' is not a 'Conference' key")
-        # Get the conference object
-        conf = confKey.get()
-        if not conf:
-            raise endpoints.NotFoundException(
-                'No conference found with key: %s' %
-                    request.websafeConferenceKey
-            )
+        # Get the conference entity
+        conf = _getEntityByWebsafeKey(request.websafeConferenceKey,
+                                      'Conference')
         # Ensure that the current user is the conference organizer
         if user_id != conf.organizerUserId:
             raise endpoints.UnauthorizedException(
                 'Only the conference organizer can create a new session')
-        # Ensure that the user submitted the required speaker key
-        if not request.speakerWebsafeKey:
-            raise endpoints.BadRequestException(
-                "Session 'speakerWebsafeKey' field required")
-        # Verify the speaker key
-        speakerKey = ndb.Key(urlsafe=request.speakerWebsafeKey)
-        if speakerKey.kind() != 'Speaker':
-            raise endpoints.BadRequestException(
-                "Key 'speakerWebsafeKey' is not a 'Speaker' key")
-        # Get the speaker object
-        speaker = speakerKey.get()
-        if not speaker:
-            raise endpoints.NotFoundException(
-                'No speaker found with key: %s' %
-                    request.speakerWebsafeKey
-            )
+        # Verify that the speaker exists
+        speaker = _getEntityByWebsafeKey(request.speakerWebsafeKey,
+                                         'Speaker')
         # Ensure that the user submitted the required name property
         if not request.name:
             raise endpoints.BadRequestException(
