@@ -523,10 +523,10 @@ class ConferenceApi(remote.Service):
         for df in SPEAKER_DEFAULTS:
             if data[df] in (None, []):
                 data[df] = SPEAKER_DEFAULTS[df]
-                setattr(request, df, SPEAKER_DEFAULTS[df])
         # Create Speaker and return SpeakerForm
-        Speaker(**data).put()
-        return request
+        speaker = Speaker(**data)
+        speaker.put()
+        return self._copySpeakerToForm(speaker)
 
     @staticmethod
     def _updateFeaturedSpeaker(websafeSpeakerKey, websafeConferenceKey):
