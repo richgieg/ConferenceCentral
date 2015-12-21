@@ -827,6 +827,13 @@ class ConferenceApi(remote.Service):
 
     def _getSessionsDoubleInequalityDemo(self, request):
         """Demonstrates my solution to the double-inequality query problem."""
+        # Convert request.maxStartTime from string to Time object
+        try:
+            maxStartTime = datetime.strptime(
+                request.maxStartTime, '%H:%M').time()
+        except:
+            raise endpoints.BadRequestException(
+                "Invalid 'maxStartTime' value")
         # Get list of session types from the enum class, then remove the
         # sessionTypeToAvoid value from it. This leaves all the session types
         # the user still wants in their search.
@@ -837,7 +844,7 @@ class ConferenceApi(remote.Service):
         # Construct query, utilizing the list of equality filters in an OR
         # function. Add the startTime inequality filter. Then execute.
         query = Session.query(ndb.OR(*equalityFilters))
-        query = query.filter(Session.startTime <= request.maxStartTime)
+        query = query.filter(Session.startTime <= maxStartTime)
         sessions = query.order(Session.startTime).fetch()
         return sessions
 
