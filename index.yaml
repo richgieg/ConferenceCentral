@@ -396,7 +396,7 @@ indexes:
 
 
 ###############################################################################
-###     Additional Indexes (Task 3)
+###     Additional Indexes (part of Task 3 exercise)
 ###############################################################################
 
 # Required by ConferenceApi.getSessionsByHighlightSearch
