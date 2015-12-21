@@ -676,11 +676,6 @@ class ConferenceApi(remote.Service):
         for df in SESSION_DEFAULTS:
             if data[df] in (None, []):
                 data[df] = SESSION_DEFAULTS[df]
-                if df == 'typeOfSession':
-                    setattr(request, df,
-                        getattr(SessionType, SESSION_DEFAULTS[df]))
-                else:
-                    setattr(request, df, SESSION_DEFAULTS[df])
         # Ensure the string version of typeOfSession is what is stored
         # in the NDB model
         data['typeOfSession'] = str(data['typeOfSession'])
@@ -710,13 +705,16 @@ class ConferenceApi(remote.Service):
                 # Convert date field to date string
                 if field.name == 'date':
                     setattr(sf, field.name, str(getattr(session, field.name)))
+                # Convert typeOfSession string field to enum
                 elif field.name == 'typeOfSession':
                     setattr(sf, field.name,
                         getattr(SessionType, getattr(session, field.name)))
-                elif field.name == "websafeKey":
-                    setattr(sf, field.name, session.key.urlsafe())
+                # Copy other fields verbatim
                 else:
                     setattr(sf, field.name, getattr(session, field.name))
+            # Ensure that the SessionForm contains websafeKey
+            elif field.name == "websafeKey":
+                setattr(sf, field.name, session.key.urlsafe())
         sf.check_initialized()
         return sf
 
