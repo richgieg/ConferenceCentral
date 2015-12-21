@@ -591,9 +591,6 @@ class ConferenceApi(remote.Service):
                 else:
                     setattr(sf, field.name, getattr(session, field.name))
         sf.check_initialized()
-
-
-
         return sf
 
 ###############################################################################
