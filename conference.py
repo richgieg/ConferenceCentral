@@ -81,25 +81,23 @@ FIELDS = {
 }
 
 
-def _getEntityByWebsafeKey(websafeKey, kind):
-    """Attempts to retrieve entity, performing verification in the process.
+def _raiseIfWebsafeKeyNotValid(websafeKey, kind):
+    """Ensures that a websafe key is valid and of the desired kind.
 
     Args:
-        websafeKey (string): Websafe key that is used to locate the entity.
+        websafeKey (string): Websafe key that is to be verified.
         kind (string): Used to ensure that the websafe key represents the
             desired kind. For example, "Session".
 
     Returns:
-        If websafeKey is not None, is valid, is of the correct kind, and
-        the entity with the ID it references is located, the entity is
-        returned. In any other case, an Endpoints exception is raised.
+        No value is ever returned. If websafeKey is not None, is valid and is
+        of the desired kind, then the function returns quietly. Otherwise, an
+        exception is raised.
 
     Raises:
         endpoints.BadRequestException: Occurs if the websafeKey argument
             is either equal to None, not able to be decoded or not of the
             desired kind.
-        endpoints.NotFoundException: Occurs if the websafeKey passes all
-            tests but the entity is not located.
     """
     # Check that websafeKey is not None
     if not websafeKey:
@@ -116,6 +114,30 @@ def _getEntityByWebsafeKey(websafeKey, kind):
     if key.kind() != kind:
         raise endpoints.BadRequestException(
             "Websafe key is not of the '%s' kind: %s" % (kind, websafeKey))
+
+
+def _getEntityByWebsafeKey(websafeKey, kind):
+    """Attempts to retrieve entity, performing verification in the process.
+
+    Args:
+        websafeKey (string): Websafe key that is used to locate the entity.
+        kind (string): Used to ensure that the websafe key represents the
+            desired kind. For example, "Session".
+
+    Returns:
+        If websafeKey is not None, is valid, is of the desired kind, and
+        the entity with the ID it references is located, the entity is
+        returned. In any other case, an Endpoints exception is raised.
+
+    Raises:
+        endpoints.BadRequestException: Occurs if the websafeKey argument
+            is either equal to None, not able to be decoded or not of the
+            desired kind.
+        endpoints.NotFoundException: Occurs if the websafeKey passes all
+            tests but the entity is not located.
+    """
+    # Ensure that the websafe key is valid
+    _raiseIfWebsafeKeyNotValid(websafeKey, kind)
     # Get the entity
     entity = key.get()
     if not entity:
