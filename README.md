@@ -86,3 +86,19 @@ that share a common ancestor path, the greater the chances your application
 has of exceeding the "one write per second for a single entity group" recommended
 limit. Breaking that barrier can result in a greater number of failures, [according
 to the documentation](https://cloud.google.com/appengine/articles/scaling/contention).
+
+
+## Task One: Implementation
+
+I implemented the following Endpoints API methods to support the requirements of
+this task:
+
+**Required:**
+- createSession
+- getConferenceSessions
+- getConferenceSessionsByType
+- getSessionsBySpeaker
+
+**Additional:**
+- createSpeaker
+- getSpeakers
