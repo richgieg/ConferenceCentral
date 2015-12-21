@@ -508,6 +508,7 @@ class ConferenceApi(remote.Service):
 ###         Sessions: Private Methods
 ###############################################################################
 
+    @ndb.transactional(xg=True)
     def _createSessionObject(self, request):
         """Create a session, returning SessionForm/request."""
         # Preload necessary data items
@@ -569,7 +570,8 @@ class ConferenceApi(remote.Service):
         # Create Session and return SessionForm
         session = Session(**data)
         session.put()
-        print session.typeOfSession
+        conf.sessions.append(session.key)
+        conf.put()
         return self._copySessionToForm(session)
 
     def _copySessionToForm(self, session):

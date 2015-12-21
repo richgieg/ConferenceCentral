@@ -39,6 +39,7 @@ class Conference(ndb.Model):
     endDate = ndb.DateProperty()
     maxAttendees = ndb.IntegerProperty()
     seatsAvailable = ndb.IntegerProperty()
+    sessions = ndb.KeyProperty(repeated=True)
 
 
 class ConferenceForm(messages.Message):
