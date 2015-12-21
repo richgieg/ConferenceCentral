@@ -399,7 +399,8 @@ indexes:
 ###     Additional Indexes (Task 3)
 ###############################################################################
 
+# Required by getSessionsByHighlightSearch
 - kind: Session
   properties:
-  - name: conference
-  - name: typeOfSession
+  - name: highlights
+  - name: name

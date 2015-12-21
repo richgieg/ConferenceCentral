@@ -94,6 +94,12 @@ CONF_POST_REQUEST = endpoints.ResourceContainer(
 )
 
 
+CONF_TOPICS_GET_REQUEST = endpoints.ResourceContainer(
+    message_types.VoidMessage,
+    topics=messages.StringField(1, repeated=True)
+)
+
+
 ###############################################################################
 ###         Models: Speakers
 ###############################################################################
@@ -216,6 +222,12 @@ SESSIONTYPE_GET_REQUEST = endpoints.ResourceContainer(
 SESSION_SPEAKER_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
     websafeSpeakerKey=messages.StringField(1, required=True),
+)
+
+
+SESSION_HIGHLIGHTS_GET_REQUEST = endpoints.ResourceContainer(
+    message_types.VoidMessage,
+    highlights=messages.StringField(1, repeated=True)
 )
 
 

@@ -28,6 +28,7 @@ from models import BooleanMessage
 from models import CONF_DEFAULTS
 from models import CONF_GET_REQUEST
 from models import CONF_POST_REQUEST
+from models import CONF_TOPICS_GET_REQUEST
 from models import Conference
 from models import ConferenceForm
 from models import ConferenceForms
@@ -40,6 +41,7 @@ from models import ProfileForm
 from models import Session
 from models import SESSION_DEFAULTS
 from models import SESSION_GET_REQUEST
+from models import SESSION_HIGHLIGHTS_GET_REQUEST
 from models import SESSION_POST_REQUEST
 from models import SESSION_SPEAKER_GET_REQUEST
 from models import SESSIONTYPE_GET_REQUEST
@@ -254,6 +256,19 @@ class ConferenceApi(remote.Service):
             formatted_filters.append(filtr)
         return (inequality_field, formatted_filters)
 
+    def _getConferencesByTopicSearch(self, request):
+        """Retrieve all conferences matching one or more given topics."""
+        # Generate list of filters from the topic arguments
+        filters = [Conference.topics == topic for topic in request.topics]
+        if not filters:
+            raise endpoints.BadRequestException(
+                'At least one topic must be specified'
+            )
+        # Retrieve all conferences matching one or more of the topic filters
+        conferences = Conference.query(
+            ndb.OR(*filters)).order(Conference.name).fetch()
+        return conferences
+
     def _getQuery(self, request):
         """Return formatted query from the submitted filters."""
         q = Conference.query()
@@ -349,6 +364,32 @@ class ConferenceApi(remote.Service):
         prof = conf.key.parent().get()
         # Return ConferenceForm
         return self._copyConferenceToForm(conf, getattr(prof, 'displayName'))
+
+    @endpoints.method(CONF_TOPICS_GET_REQUEST, ConferenceForms,
+            path='conferences/topics',
+            http_method='GET',
+            name='getConferencesByTopicSearch')
+    def getConferencesByTopicSearch(self, request):
+        """Get list of conferences matching one or more of the given topics."""
+        conferences = self._getConferencesByTopicSearch(request)
+        # Need to fetch organiser displayName from profiles
+        # Get all keys and use get_multi for speed
+        organisers = [
+            (ndb.Key(Profile, conf.organizerUserId)) for conf in conferences
+        ]
+        profiles = ndb.get_multi(organisers)
+        # Put display names in a dict for easier fetching
+        names = {}
+        for profile in profiles:
+            names[profile.key.id()] = profile.displayName
+        # Return individual ConferenceForm object per Conference
+        # Return individual ConferenceForm object per Conference
+        return ConferenceForms(
+            items=[
+                self._copyConferenceToForm(conf, names[conf.organizerUserId])
+                    for conf in conferences
+            ]
+        )
 
     @endpoints.method(message_types.VoidMessage, ConferenceForms,
             path='getConferencesCreated',
@@ -662,6 +703,18 @@ class ConferenceApi(remote.Service):
         ).fetch()
         return sessions
 
+    def _getSessionsByHighlightSearch(self, request):
+        """Retrieve all sessions matching one or more given highlights."""
+        # Generate list of filters from the highlight arguments
+        filters = [Session.highlights == hl for hl in request.highlights]
+        if not filters:
+            raise endpoints.BadRequestException(
+                'At least one highlight must be specified'
+            )
+        # Retrieve all sessions that match one or more of the highlight filters
+        sessions = Session.query(ndb.OR(*filters)).order(Session.name).fetch()
+        return sessions
+
     def _getSessionsBySpeaker(self, request):
         """Retrieve all sessions given by a particular speaker."""
         try:
@@ -746,8 +799,20 @@ class ConferenceApi(remote.Service):
             items=[self._copySessionToForm(session) for session in sessions]
         )
 
+    @endpoints.method(SESSION_HIGHLIGHTS_GET_REQUEST, SessionForms,
+            path='sessions/highlights',
+            http_method='GET',
+            name='getSessionsByHighlightSearch')
+    def getSessionsByHighlightSearch(self, request):
+        """Get list of sessions matching one or more of the given highlights."""
+        sessions = self._getSessionsByHighlightSearch(request)
+        # Return individual SessionForm object per Session
+        return SessionForms(
+            items=[self._copySessionToForm(session) for session in sessions]
+        )
+
     @endpoints.method(SESSION_SPEAKER_GET_REQUEST, SessionForms,
-            path='sessions/byspeaker/{websafeSpeakerKey}',
+            path='sessions/speaker/{websafeSpeakerKey}',
             http_method='GET',
             name='getSessionsBySpeaker')
     def getSessionsBySpeaker(self, request):
