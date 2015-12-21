@@ -157,7 +157,7 @@ class Session(ndb.Model):
     typeOfSession = ndb.StringProperty(default='NOT_SPECIFIED')
     date = ndb.DateProperty()
     startTime = ndb.StringProperty()
-    conference = ndb.KeyProperty()
+    conference = ndb.KeyProperty(required=True)
 
 
 class SessionForm(messages.Message):
