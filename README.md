@@ -106,6 +106,9 @@ this task:
 
 ## Task Two: Implementation
 
+*Users should be able to mark some sessions that they are interested in and
+retrieve their own current wishlist.*
+
 I implemented the following Endpoints API methods to support the requirements of
 this task:
 
@@ -119,6 +122,9 @@ this task:
 
 ## Task Three: Create Indexes
 
+*Make sure the indexes support the type of queries required by the new
+Endpoints methods.*
+
 I added indexes to `index.yaml` to support all additional queries. Also, I wrote
 extensive documentation in `index.yaml` explaining the algorithm I used to generate
 the smallest number of indexes needed to handle all possible filter combinations that
@@ -126,3 +132,29 @@ users may submit to the `queryConferences` API. I believe this documentation doe
 job in demonstrating my understanding of how datastore indexes work. Also, I believe
 it demonstrates my grasp of basic discrete mathematics and computer science concepts
 (counting, combinations).
+
+
+## Task Three: New Queries
+
+*Think about other types of queries that would be useful for this application. Describe
+the purpose of two new queries and implement them.*
+
+I believe that users should be able to attain a list of conferences in which each
+conference matches one or more topics from a list of topics that the user supplies.
+The existing query implementation is AND-based, so combining multiple equality filters
+that target the topics field only serves to further constrain and diminish the results.
+My proposed query type makes it possible for a user to enter a list of topics in which
+they're interested and be presented with a list of conferences that match one or more
+of the topics in their list.
+
+Also, I believe that users should similarly be able to attain a list of sessions in
+which each session matches one or more highlights from a list of highlights that the
+user supplies. This will allow the user to enter a list of highlights in which
+they're interested and be presented with a list of sessions that match one or more
+of the highlights in their list.
+
+I implemented the following Endpoints API methods to support the requirements of
+this task:
+
+- `getConferencesByTopicSearch`
+- `getSessionsByHighlightSearch`
