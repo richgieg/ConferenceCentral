@@ -166,6 +166,12 @@ class SessionForms(messages.Message):
     items = messages.MessageField(SessionForm, 1, repeated=True)
 
 
+class SessionByTypeForm(messages.Message):
+    """Session query by type inbound message."""
+    websafeConferenceKey = messages.StringField(1)
+    fart = messages.StringField(2)
+
+
 class SessionType(messages.Enum):
     """Session type enumeration value."""
     NOT_SPECIFIED = 1
@@ -190,8 +196,8 @@ SESSION_POST_REQUEST = endpoints.ResourceContainer(
 
 SESSIONTYPE_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
-    websafeConferenceKey=messages.StringField(1),
-    type=messages.StringField(2),
+    websafeConferenceKey=messages.StringField(1, required=True),
+    typeOfSession=messages.StringField(2, required=True),
 )
 
 

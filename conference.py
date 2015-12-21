@@ -606,6 +606,22 @@ class ConferenceApi(remote.Service):
         sessions = Session.query(Session.conference == confKey).fetch()
         return sessions
 
+    def _getConferenceSessionsByType(self, request):
+        """Retrieve all sessions associated with a conference, by type."""
+        try:
+            confKey = ndb.Key(urlsafe=request.websafeConferenceKey)
+        except:
+            raise endpoints.BadRequestException(
+                'Invalid conference key: %s' %
+                    request.websafeConferenceKey
+                )
+        # Retrieve all sessions that have a matching conference key, by type
+        sessions = Session.query(
+            Session.conference == confKey,
+            Session.typeOfSession == request.typeOfSession
+        ).fetch()
+        return sessions
+
 ###############################################################################
 ###         Sessions: Endpoints Methods
 ###############################################################################
@@ -619,11 +635,23 @@ class ConferenceApi(remote.Service):
 
     @endpoints.method(CONF_GET_REQUEST, SessionForms,
             path='conference/{websafeConferenceKey}/sessions',
-            http_method='POST',
+            http_method='GET',
             name='getConferenceSessions')
     def getConferenceSessions(self, request):
         """Get list of sessions associated with a conference."""
         sessions = self._getConferenceSessions(request)
+        # Return individual SessionForm object per Session
+        return SessionForms(
+            items=[self._copySessionToForm(session) for session in sessions]
+        )
+
+    @endpoints.method(SESSIONTYPE_GET_REQUEST, SessionForms,
+            path='conference/{websafeConferenceKey}/sessionsByType',
+            http_method='GET',
+            name='getConferenceSessionsByType')
+    def getConferenceSessionsByType(self, request):
+        """Get list of sessions associated with a conference (by type)."""
+        sessions = self._getConferenceSessionsByType(request)
         # Return individual SessionForm object per Session
         return SessionForms(
             items=[self._copySessionToForm(session) for session in sessions]
