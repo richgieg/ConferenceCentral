@@ -498,7 +498,7 @@ class ConferenceApi(remote.Service):
     @endpoints.method(SPEAKER_GET_REQUEST, SpeakerForm, path='speaker',
             http_method='GET', name='getSpeaker')
     def getSpeaker(self, request):
-        """Return requested speaker (by websafeConferenceKey)."""
+        """Return requested speaker (by websafeSpeakerKey)."""
         # Get Speaker object from request; bail if not found
         speaker = ndb.Key(urlsafe=request.websafeSpeakerKey).get()
         if not speaker:
