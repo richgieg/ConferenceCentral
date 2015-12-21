@@ -54,3 +54,35 @@ method requires input to execute.
 The following sections contain my written responses to application design
 questions that were presented as part of this project, as well as additional
 information as it is deemed necessary.
+
+
+## Task One: Design Choices
+
+*Explain your design choices for session and speaker implementation.*
+
+First of all, I decided that speakers should be represented as their own
+entities, rather than by using strings. It would be useful to store
+additional data describing the speakers, which would in turn be helpful
+to the users and administrators of the application. Also, storing only
+the speaker's name as a string, rather than creating an entity, could lead
+to name collisions. This would be a big problem for the getSessionsBySpeaker
+API, which would return all sessions hosted by a speaker with the name
+"John Smith", for example, without any clue as to whether or not all sessions
+are actually hosted by the same "John Smith".
+
+When modeling the relationship between conferences and sessions, I decided
+to avoid using the ancestor relationship in favor of using a foreign key
+type of relationship. The session kind defines a KeyProperty field in which
+a session entity stores the key for the conference entity to which it belongs.
+Similarly, a session entity also stores the key for the speaker entity that
+represents the speaker who is hosting the session. Going the ancestor route
+may make queries look a little neater, however, I've learned throughout the
+"Building Scalable Apps in Python" course that it's often the best decision to
+utilize the eventual consistency model of the datastore unless it's absolutely
+necessary to guarantee strong consistency. This is due to the fact that greater
+scalability and responsiveness can be achieved when the system isn't bound to
+the constraints of the strong consistency model. For example, the more entities
+that share a common ancestor path, the greater the chances your application
+has of exceeding the "one write per second for a single entity group" recommended
+limit. Breaking that barrier can result in a greater number of failures, [according
+to the documentation](https://cloud.google.com/appengine/articles/scaling/contention).
