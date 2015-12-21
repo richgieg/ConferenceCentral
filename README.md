@@ -166,16 +166,16 @@ this task:
 How would you handle a query for all non-workshop sessions before 7:00pm? What is
 the problem for implementing this query? How would you solve it?*
 
-The issue with this query is that it proposes utilizing two inequality filters. A
-limitation of the Google App Engine datastore is that it can only support a maximum
-of one inequality filter in a query. Since I implemented a `SessionType` enum which
-governs the accepted values for the `typeOfSession` property on session entities, this
-this problem can be solved by converting the single session-type `!=` filter into a list
-of session-type `==` filters for all session types from the `SessionType` enum
-except for the session type that the user wants to exclude. The list can then be passed
-into `ndb.OR` to "or" them together. This results in all sessions that are of any
-session-type, except for the excluded session-type, to be matched, provided they meet
-the requirements of the `startTime` inequality filter.
+The issue with this query is that it proposes utilizing inequality filters on two
+different properties. A limitation of the Google App Engine datastore is that it can
+only support applying inequality filters to at most one property in a query. Since I
+implemented a `SessionType` enum which governs the accepted values for the `typeOfSession`
+property on session entities, this this problem can be solved by converting the single
+session-type `!=` filter into a list of session-type `==` filters for all session types
+from the `SessionType` enum except for the session type that the user wants to exclude.
+The list can then be passed into `ndb.OR` to "or" them together. This results in all
+sessions that are of any session-type, except for the excluded session-type, to be
+matched, provided they meet the requirements of the `startTime` inequality filter.
 
 I implemented the following Endpoints API method to demonstrate the above solution:
 
