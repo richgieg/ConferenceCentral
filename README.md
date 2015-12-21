@@ -180,3 +180,15 @@ matched, provided they meet the requirements of the `startTime` inequality filte
 I implemented the following Endpoints API method to demonstrate the above solution:
 
 - getSessionsDoubleInequalityDemo
+
+
+## Task Four: Add a Task to the Task Queue
+
+*When a new session is added to a conference, check the speaker. If there is more than
+one session by this speaker at this conference, add a new Memcache entry that features
+the speaker and session names. This should be handled using App Engine's Task Queue.*
+
+I implemented the following Endpoints API method to support the requirements of
+this task:
+
+- getFeaturedSpeaker
