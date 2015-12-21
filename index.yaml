@@ -392,3 +392,14 @@ indexes:
   - name: month           # equality target
   - name: topics          # inequality target
   - name: name
+
+
+
+###############################################################################
+###     Additional Indexes (Task 3)
+###############################################################################
+
+- kind: Session
+  properties:
+  - name: conference
+  - name: typeOfSession
