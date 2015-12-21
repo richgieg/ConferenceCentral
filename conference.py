@@ -713,19 +713,29 @@ class ConferenceApi(remote.Service):
         }
         del data['websafeConferenceKey']
         del data['websafeKey']
-        # Add default values for those missing (both data model and
-        # outbound Message)
+        # Add default values for those missing in the data model
         for df in SESSION_DEFAULTS:
             if data[df] in (None, []):
                 data[df] = SESSION_DEFAULTS[df]
         # Ensure the string version of typeOfSession is what is stored
         # in the NDB model
         data['typeOfSession'] = str(data['typeOfSession'])
-        # Convert dates from strings to Date objects; set month based
-        # on start_date
-        if data['date']:
-            data['date'] = datetime.strptime(
-                data['date'][:10], "%Y-%m-%d").date()
+        # Convert date from string to Date object
+        if data['date'] is not None:
+            try:
+                data['date'] = datetime.strptime(
+                    data['date'][:10], '%Y-%m-%d').date()
+            except:
+                raise endpoints.BadRequestException(
+                    "Invalid 'date' value")
+        # Convert startTime from string to Time object
+        if data['startTime'] is not None:
+            try:
+                data['startTime'] = datetime.strptime(
+                    data['startTime'], '%H:%M').time()
+            except:
+                raise endpoints.BadRequestException(
+                    "Invalid 'startTime' value")
         # Create Session and return SessionForm
         session = Session(**data)
         session.conference = conf.key
@@ -747,6 +757,10 @@ class ConferenceApi(remote.Service):
                 # Convert date field to date string
                 if field.name == 'date':
                     setattr(sf, field.name, str(getattr(session, field.name)))
+                # Convert time field to time string
+                elif field.name == 'startTime':
+                    setattr(sf, field.name,
+                            getattr(session, field.name).strftime('%H:%M'))
                 # Convert typeOfSession string field to enum
                 elif field.name == 'typeOfSession':
                     setattr(sf, field.name,

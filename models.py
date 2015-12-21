@@ -15,6 +15,7 @@ Modified by Richard Gieg on 2015/12/20 for Udacity Full Stack Project #4
 __author__ = 'wesc+api@google.com (Wesley Chun)'
 
 import httplib
+from datetime import time
 
 import endpoints
 from google.appengine.ext import ndb
@@ -156,7 +157,7 @@ class Session(ndb.Model):
     duration = ndb.IntegerProperty()
     typeOfSession = ndb.StringProperty(default='NOT_SPECIFIED')
     date = ndb.DateProperty()
-    startTime = ndb.StringProperty()
+    startTime = ndb.TimeProperty()
     conference = ndb.KeyProperty(required=True)
 
 
@@ -193,6 +194,7 @@ class SessionType(messages.Enum):
 
 
 SESSION_DEFAULTS = {
+    "date": "1900-01-01",
     "highlights": ["Default", "Highlight"],
     "duration": 60,
     "startTime": "00:00",
