@@ -90,9 +90,8 @@ def _raiseIfWebsafeKeyNotValid(websafeKey, kind):
             desired kind. For example, "Session".
 
     Returns:
-        No value is ever returned. If websafeKey is not None, is valid and is
-        of the desired kind, then the function returns quietly. Otherwise, an
-        exception is raised.
+        If websafeKey is not None, is valid and is of the desired kind, then
+        the function returns the actual key. Otherwise, an exception is raised.
 
     Raises:
         endpoints.BadRequestException: Occurs if the websafeKey argument
@@ -114,6 +113,8 @@ def _raiseIfWebsafeKeyNotValid(websafeKey, kind):
     if key.kind() != kind:
         raise endpoints.BadRequestException(
             "Websafe key is not of the '%s' kind: %s" % (kind, websafeKey))
+    # If all is well, return the key
+    return key
 
 
 def _getEntityByWebsafeKey(websafeKey, kind):
@@ -137,13 +138,14 @@ def _getEntityByWebsafeKey(websafeKey, kind):
             tests but the entity is not located.
     """
     # Ensure that the websafe key is valid
-    _raiseIfWebsafeKeyNotValid(websafeKey, kind)
+    key = _raiseIfWebsafeKeyNotValid(websafeKey, kind)
     # Get the entity
     entity = key.get()
     if not entity:
         raise endpoints.NotFoundException(
             "No '%s' entity found using websafe key: %s" %
                 (kind, websafeKey))
+    # If all is well, return the entity
     return entity
 
 
@@ -801,13 +803,8 @@ class ConferenceApi(remote.Service):
 
     def _getSessionsBySpeaker(self, request):
         """Retrieve all sessions given by a particular speaker."""
-        try:
-            speakerKey = ndb.Key(urlsafe=request.websafeSpeakerKey)
-        except:
-            raise endpoints.BadRequestException(
-                'Invalid speaker key: %s' %
-                    request.websafeSpeakerKey
-                )
+        # Ensure that the speaker key is valid and that the speaker exists
+        _getEntityByWebsafeKey(request.websafeSpeakerKey, 'Speaker')
         # Retrieve all sessions that have a matching speaker key
         sessions = Session.query(
             Session.speakerWebsafeKey == request.websafeSpeakerKey
