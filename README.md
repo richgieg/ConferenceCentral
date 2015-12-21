@@ -65,14 +65,14 @@ entities, rather than by using strings. It would be useful to store
 additional data describing the speakers, which would in turn be helpful
 to the users and administrators of the application. Also, storing only
 the speaker's name as a string, rather than creating an entity, could lead
-to name collisions. This would be a big problem for the getSessionsBySpeaker
+to name collisions. This would be a big problem for the `getSessionsBySpeaker`
 API, which would return all sessions hosted by speakers with the name
 "John Smith", for example, without any clue as to whether or not any sessions
 are actually hosted by the same "John Smith".
 
 When modeling the relationship between conferences and sessions, I decided
 to avoid using the ancestor relationship in favor of using a foreign key
-type of relationship. The session kind defines a KeyProperty field in which
+type of relationship. The session kind defines a `KeyProperty` field in which
 a session entity stores the key for the conference entity to which it belongs.
 Similarly, a session entity also stores the key for the speaker entity that
 represents the speaker who is hosting the session. Although going the ancestor route
@@ -94,14 +94,14 @@ I implemented the following Endpoints API methods to support the requirements of
 this task:
 
 **Required:**
-- createSession
-- getConferenceSessions
-- getConferenceSessionsByType
-- getSessionsBySpeaker
+- `createSession`
+- `getConferenceSessions`
+- `getConferenceSessionsByType`
+- `getSessionsBySpeaker`
 
 **Additional:**
-- createSpeaker
-- getSpeakers
+- `createSpeaker`
+- `getSpeakers`
 
 
 ## Task Two: Implementation
@@ -110,8 +110,19 @@ I implemented the following Endpoints API methods to support the requirements of
 this task:
 
 **Required:**
-- addSessionToWishlist
-- getSessionsInWishlist
+- `addSessionToWishlist`
+- `getSessionsInWishlist`
 
 **Additional:**
-- removeSessionFromWishlist
+- `removeSessionFromWishlist`
+
+
+## Task Three: Create Indexes
+
+I added indexes to `index.yaml` to support all additional queries. Also, I wrote
+extensive documentation in `index.yaml` explaining the algorithm I used to generate
+the smallest number of indexes needed to handle all possible filter combinations that
+users may submit to the `queryConferences` API. I believe this documentation does a great
+job in demonstrating my understanding of how datastore indexes work. Also, I believe
+it demonstrates my grasp of basic discrete mathematics and computer science concepts
+(counting, combinations).
