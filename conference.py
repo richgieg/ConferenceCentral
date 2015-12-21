@@ -925,14 +925,14 @@ class ConferenceApi(remote.Service):
         )
 
     @endpoints.method(SESSION_GET_REQUEST, BooleanMessage,
-            path='sessions/addtowishlist/{websafeSessionKey}',
+            path='sessions/wishlist/{websafeSessionKey}',
             http_method='POST', name='addSessionToWishlist')
     def addSessionToWishlist(self, request):
         """Add a session to the user's wishlist."""
         return self._addSessionToWishlist(request)
 
     @endpoints.method(SESSION_GET_REQUEST, BooleanMessage,
-            path='sessions/removefromwishlist/{websafeSessionKey}',
+            path='sessions/wishlist/{websafeSessionKey}',
             http_method='DELETE', name='removeSessionFromWishlist')
     def removeSessionFromWishlist(self, request):
         """Removes a session from the user's wishlist."""
