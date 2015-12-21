@@ -19,10 +19,31 @@ manners in which to query the data."
 
 To access the front-end of the application, visit the following link:
 
-http://conference-central-123.appspot.com
+https://conference-central-123.appspot.com
 
 From the landing page you can navigate to other pages which will allow you
 to view, create and register for conferences. You will be prompted to log
 in with your Google account before you're actually allowed to create a
 conference or register to attend a conference. Keep in mind, all conferences
-on this site are fictional. ;)
+on this site are fictional, so don't get your hopes up... ;)
+
+
+## Accessing the API Explorer
+
+To access the back-end of the application, visit the following link:
+
+https://conference-central-123.appspot.com/_ah/api/explorer
+
+From here you can select "Conference API v0.1" which will bring you to a list
+of all API methods exposed by the Conference Central application. This allows
+you to experiment directly with the functions that the front-end utilizes
+behind the scenes to do the "heavy lifting". Just as some features of the
+front-end require authentication, many API methods require you to be
+authenticated as well. For example, click on the `conference.getProfile` API.
+You should see a button that says, "Authorize and Execute". Click the button,
+sign in with your Google account, then observe the JSON information returned.
+You should your email address, display name, etc. Feel free to play around
+with the other API methods. Keep in mind, some require input from you in
+order to accomplish their task. Google has engineered a very friendly
+interface for the API explorer, so it should be fairly obvious when an API
+method requires input to execute.
