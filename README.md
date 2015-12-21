@@ -179,7 +179,7 @@ matched, provided they meet the requirements of the `startTime` inequality filte
 
 I implemented the following Endpoints API method to demonstrate the above solution:
 
-- getSessionsDoubleInequalityDemo
+- `getSessionsDoubleInequalityDemo`
 
 
 ## Task Four: Add a Task to the Task Queue
