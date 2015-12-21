@@ -567,6 +567,14 @@ class ConferenceApi(remote.Service):
         """Create new speaker."""
         return self._createSpeakerObject(request)
 
+    @endpoints.method(message_types.VoidMessage, StringMessage,
+            path='speaker/featured', http_method='GET',
+            name='getFeaturedSpeaker')
+    def getFeaturedSpeaker(self, request):
+        """Return the current featured speaker message from memcache."""
+        message = memcache.get(MEMCACHE_FEATURED_SPEAKER_KEY) or ""
+        return StringMessage(data=message)
+
     @endpoints.method(SPEAKER_GET_REQUEST, SpeakerForm, path='speaker',
             http_method='GET', name='getSpeaker')
     def getSpeaker(self, request):
