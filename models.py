@@ -140,7 +140,7 @@ SPEAKER_DEFAULTS = {
 
 SPEAKER_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
-    websafeSpeakerKey=messages.StringField(1),
+    websafeSpeakerKey=messages.StringField(1, required=True),
 )
 
 
@@ -153,11 +153,11 @@ class Session(ndb.Model):
     """Session object."""
     name = ndb.StringProperty(required=True)
     highlights = ndb.StringProperty(repeated=True)
-    speakerWebsafeKey = ndb.StringProperty(required=True)
     duration = ndb.IntegerProperty()
     typeOfSession = ndb.StringProperty(default='NOT_SPECIFIED')
     date = ndb.DateProperty()
     startTime = ndb.TimeProperty()
+    speaker = ndb.KeyProperty(required=True)
     conference = ndb.KeyProperty(required=True)
 
 
@@ -165,12 +165,11 @@ class SessionForm(messages.Message):
     """Session inbound/outbound form message."""
     name = messages.StringField(1)
     highlights = messages.StringField(2, repeated=True)
-    speakerWebsafeKey = messages.StringField(3)
-    duration = messages.IntegerField(4, variant=messages.Variant.INT32)
-    typeOfSession = messages.EnumField('SessionType', 5)
-    date = messages.StringField(6)
-    startTime = messages.StringField(7)
-    websafeKey = messages.StringField(8)
+    duration = messages.IntegerField(3, variant=messages.Variant.INT32)
+    typeOfSession = messages.EnumField('SessionType', 4)
+    date = messages.StringField(5)
+    startTime = messages.StringField(6)
+    websafeKey = messages.StringField(7)
 
 
 class SessionForms(messages.Message):
@@ -211,6 +210,7 @@ SESSION_GET_REQUEST = endpoints.ResourceContainer(
 SESSION_POST_REQUEST = endpoints.ResourceContainer(
     SessionForm,
     websafeConferenceKey=messages.StringField(1, required=True),
+    websafeSpeakerKey=messages.StringField(2, required=True),
 )
 
 

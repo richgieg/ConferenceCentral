@@ -601,12 +601,16 @@ class ConferenceApi(remote.Service):
         """Check if the specified speaker is speaking at multiple sessions
         in the specified conference, and create memcache entry if so.
         """
+        # Validate the websafe key arguments. Exception is raised if either
+        # call fails.
+        speaker = _getEntityByWebsafeKey(websafeSpeakerKey, 'Speaker')
+        confKey = _raiseIfWebsafeKeyNotValid(websafeConferenceKey,
+                                             'Conference')
         # Get all sessions by the specified speaker at the specified
         # conference. Use a projection query, since the only information we're
         # interested in from the session entities is their name.
-        confKey = ndb.Key(urlsafe=websafeConferenceKey)
         sessionsBySpeaker = Session.query(
-            Session.speakerWebsafeKey == websafeSpeakerKey,
+            Session.speaker == speaker.key,
             Session.conference == confKey
         ).fetch(projection=[Session.name])
         # If there are fewer than two sessions, return immediately since
@@ -615,12 +619,10 @@ class ConferenceApi(remote.Service):
             return
         # Put the session names into a list, alphabetically
         sessionNames = sorted([s.name for s in sessionsBySpeaker])
-        # Retrieve the speaker's name
-        speakerName = ndb.Key(urlsafe=websafeSpeakerKey).get().name
         # Generate the featured speaker message
         featuredSpeakerMsg = (
             'Our featured speaker is {}, who will be speaking at the following '
-            'sessions: {}'.format(speakerName, ', '.join(sessionNames))
+            'sessions: {}'.format(speaker.name, ', '.join(sessionNames))
         )
         # Set the memcache entry to the new featured speaker message
         memcache.set(MEMCACHE_FEATURED_SPEAKER_KEY, featuredSpeakerMsg)
@@ -701,7 +703,7 @@ class ConferenceApi(remote.Service):
             raise endpoints.UnauthorizedException(
                 'Only the conference organizer can create a new session')
         # Verify that the speaker exists
-        speaker = _getEntityByWebsafeKey(request.speakerWebsafeKey, 'Speaker')
+        speaker = _getEntityByWebsafeKey(request.websafeSpeakerKey, 'Speaker')
         # Ensure that the user submitted the required name property
         if not request.name:
             raise endpoints.BadRequestException(
@@ -712,6 +714,7 @@ class ConferenceApi(remote.Service):
                 request.all_fields()
         }
         del data['websafeConferenceKey']
+        del data['websafeSpeakerKey']
         del data['websafeKey']
         # Add default values for those missing in the data model
         for df in SESSION_DEFAULTS:
@@ -739,10 +742,11 @@ class ConferenceApi(remote.Service):
         # Create Session and return SessionForm
         session = Session(**data)
         session.conference = conf.key
+        session.speaker = speaker.key
         session.put()
         # Add a task to task queue which checks if the speaker of this session
         # should be the new featured speaker
-        taskqueue.add(params={'websafeSpeakerKey': request.speakerWebsafeKey,
+        taskqueue.add(params={'websafeSpeakerKey': request.websafeSpeakerKey,
             'websafeConferenceKey': request.websafeConferenceKey},
             url='/tasks/update_featured_speaker'
         )
@@ -818,11 +822,9 @@ class ConferenceApi(remote.Service):
     def _getSessionsBySpeaker(self, request):
         """Retrieve all sessions given by a particular speaker."""
         # Ensure that the speaker key is valid and that the speaker exists
-        _getEntityByWebsafeKey(request.websafeSpeakerKey, 'Speaker')
+        speaker = _getEntityByWebsafeKey(request.websafeSpeakerKey, 'Speaker')
         # Retrieve all sessions that have a matching speaker key
-        sessions = Session.query(
-            Session.speakerWebsafeKey == request.websafeSpeakerKey
-        ).fetch()
+        sessions = Session.query(Session.speaker == speaker.key).fetch()
         return sessions
 
     def _getSessionsDoubleInequalityDemo(self, request):
