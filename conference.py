@@ -827,9 +827,8 @@ class ConferenceApi(remote.Service):
         """Retrieve all sessions given by a particular speaker."""
         # Ensure that the speaker key is valid and that the speaker exists
         speaker = _getEntityByWebsafeKey(request.websafeSpeakerKey, 'Speaker')
-        # Retrieve all sessions that have a matching speaker key
-        sessions = Session.query(Session.speaker == speaker.key).fetch()
-        return sessions
+        # Return all of the speaker's sessions
+        return ndb.get_multi(speaker.sessions)
 
     def _getSessionsDoubleInequalityDemo(self, request):
         """Demonstrates my solution to the double-inequality query problem."""
