@@ -177,12 +177,6 @@ class SessionForms(messages.Message):
     items = messages.MessageField(SessionForm, 1, repeated=True)
 
 
-class SessionByTypeForm(messages.Message):
-    """Session query by type inbound message."""
-    websafeConferenceKey = messages.StringField(1)
-    fart = messages.StringField(2)
-
-
 class SessionType(messages.Enum):
     """Session type enumeration value."""
     NOT_SPECIFIED = 1
