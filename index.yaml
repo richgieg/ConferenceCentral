@@ -416,5 +416,5 @@ indexes:
 - kind: Session
   properties:
   - name: conference
-  - name: speakerWebsafeKey
+  - name: speaker
   - name: name
