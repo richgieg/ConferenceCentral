@@ -113,6 +113,7 @@ class Speaker(ndb.Model):
     email = ndb.StringProperty(indexed=False)
     phone = ndb.StringProperty(indexed=False)
     websiteUrl = ndb.StringProperty(indexed=False)
+    sessions = ndb.KeyProperty(repeated=True)
 
 
 class SpeakerForm(messages.Message):

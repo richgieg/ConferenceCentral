@@ -740,11 +740,14 @@ class ConferenceApi(remote.Service):
             except:
                 raise endpoints.BadRequestException(
                     "Invalid 'startTime' value")
-        # Create Session and return SessionForm
+        # Create Session
         session = Session(**data)
         session.conference = conf.key
         session.speaker = speaker.key
         session.put()
+        # Add the session key to the speaker's sessions list
+        speaker.sessions.append(session.key)
+        speaker.put()
         # Add a task to task queue which checks if the speaker of this session
         # should be the new featured speaker
         taskqueue.add(params={'websafeSpeakerKey': request.websafeSpeakerKey,
