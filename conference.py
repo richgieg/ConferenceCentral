@@ -682,8 +682,8 @@ class ConferenceApi(remote.Service):
         # Verify that the session actually exists
         session = _getEntityByWebsafeKey(request.websafeSessionKey, 'Session')
         profile = self._getProfileFromUser()
-        if request.websafeSessionKey not in profile.sessionWishlist:
-            profile.sessionWishlist.append(request.websafeSessionKey)
+        if session.key not in profile.sessionWishlist:
+            profile.sessionWishlist.append(session.key)
             profile.put()
         return BooleanMessage(data=True)
 
@@ -713,6 +713,7 @@ class ConferenceApi(remote.Service):
             field.name: getattr(request, field.name) for field in
                 request.all_fields()
         }
+        # Remove data that isn't destined for the Session entity
         del data['websafeConferenceKey']
         del data['websafeSpeakerKey']
         del data['websafeKey']
@@ -856,10 +857,8 @@ class ConferenceApi(remote.Service):
         if not user:
             raise endpoints.UnauthorizedException('Authorization required')
         profile = self._getProfileFromUser()
-        # Build list of real keys from list of websafe keys
-        keys = [ndb.Key(urlsafe=wssk) for wssk in profile.sessionWishlist]
         # Fetch the entities and return them
-        return ndb.get_multi(keys)
+        return ndb.get_multi(profile.sessionWishlist)
 
     def _removeSessionFromWishlist(self, request):
         """Removes a session from the user's wishlist, returning a boolean."""
@@ -868,8 +867,12 @@ class ConferenceApi(remote.Service):
         if not user:
             raise endpoints.UnauthorizedException('Authorization required')
         profile = self._getProfileFromUser()
-        if request.websafeSessionKey in profile.sessionWishlist:
-            profile.sessionWishlist.remove(request.websafeSessionKey)
+        # Get actual session key from websafe key
+        sessionKey = _raiseIfWebsafeKeyNotValid(request.websafeSessionKey,
+                                                'Session')
+        # If the key is in the profile's session wishlist, remove it
+        if sessionKey in profile.sessionWishlist:
+            profile.sessionWishlist.remove(sessionKey)
             profile.put()
             retval = True
         else:

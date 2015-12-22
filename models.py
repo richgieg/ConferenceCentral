@@ -245,7 +245,7 @@ class Profile(ndb.Model):
     mainEmail = ndb.StringProperty()
     teeShirtSize = ndb.StringProperty(default='NOT_SPECIFIED')
     conferenceKeysToAttend = ndb.StringProperty(repeated=True)
-    sessionWishlist = ndb.StringProperty(repeated=True)
+    sessionWishlist = ndb.KeyProperty(repeated=True)
 
 
 class ProfileForm(messages.Message):
