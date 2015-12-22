@@ -189,12 +189,9 @@ class ConferenceApi(remote.Service):
         retval = None
         # Get user profile
         prof = self._getProfileFromUser()
-        # Check if conference given in the websafeConfKey exists
+        # Check if conference given in the websafeConferenceKey exists
         wsck = request.websafeConferenceKey
-        conf = ndb.Key(urlsafe=wsck).get()
-        if not conf:
-            raise endpoints.NotFoundException(
-                'No conference found with key: %s' % wsck)
+        conf = _getEntityByWebsafeKey(wsck, 'Conference')
         # Register
         if reg:
             # Check if user already registered, otherwise add
@@ -372,14 +369,9 @@ class ConferenceApi(remote.Service):
             field.name: getattr(request, field.name) for field in
                 request.all_fields()
         }
-        # Update existing conference
-        conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
-        # Check that conference exists
-        if not conf:
-            raise endpoints.NotFoundException(
-                'No conference found with key: %s' %
-                    request.websafeConferenceKey
-            )
+        # Check that the conference to update actually exists
+        conf = _getEntityByWebsafeKey(request.websafeConferenceKey,
+                                      'Conference')
         # Check that user is owner
         if user_id != conf.organizerUserId:
             raise endpoints.ForbiddenException(
@@ -425,12 +417,8 @@ class ConferenceApi(remote.Service):
     def getConference(self, request):
         """Return requested conference (by websafeConferenceKey)."""
         # Get Conference object from request; bail if not found
-        conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
-        if not conf:
-            raise endpoints.NotFoundException(
-                'No conference found with key: %s' %
-                    request.websafeConferenceKey
-            )
+        conf = _getEntityByWebsafeKey(request.websafeConferenceKey,
+                                      'Conference')
         prof = conf.key.parent().get()
         # Return ConferenceForm
         return self._copyConferenceToForm(conf, getattr(prof, 'displayName'))
@@ -650,12 +638,8 @@ class ConferenceApi(remote.Service):
     def getSpeaker(self, request):
         """Return requested speaker (by websafeSpeakerKey)."""
         # Get Speaker object from request; bail if not found
-        speaker = ndb.Key(urlsafe=request.websafeSpeakerKey).get()
-        if not speaker:
-            raise endpoints.NotFoundException(
-                'No speaker found with key: %s' %
-                    request.websafeConferenceKey
-            )
+        speaker = _getEntityByWebsafeKey(request.websafeSpeakerKey,
+                                         'Speaker')
         # Return SpeakerForm
         return self._copySpeakerToForm(speaker)
 
@@ -784,26 +768,18 @@ class ConferenceApi(remote.Service):
 
     def _getConferenceSessions(self, request):
         """Retrieve all sessions associated with a conference."""
-        try:
-            confKey = ndb.Key(urlsafe=request.websafeConferenceKey)
-        except:
-            raise endpoints.BadRequestException(
-                'Invalid conference key: %s' %
-                    request.websafeConferenceKey
-                )
+        # Ensure that websafeConferenceKey is a valid conference key
+        confKey = _raiseIfWebsafeKeyNotValid(request.websafeConferenceKey,
+                                             'Conference')
         # Retrieve all sessions that have a matching conference key
         sessions = Session.query(Session.conference == confKey).fetch()
         return sessions
 
     def _getConferenceSessionsByType(self, request):
         """Retrieve all sessions associated with a conference, by type."""
-        try:
-            confKey = ndb.Key(urlsafe=request.websafeConferenceKey)
-        except:
-            raise endpoints.BadRequestException(
-                'Invalid conference key: %s' %
-                    request.websafeConferenceKey
-                )
+        # Ensure that websafeConferenceKey is a valid conference key
+        confKey = _raiseIfWebsafeKeyNotValid(request.websafeConferenceKey,
+                                             'Conference')
         # Retrieve all sessions that have a matching conference key, by type
         sessions = Session.query(
             Session.conference == confKey,
